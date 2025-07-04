@@ -13,14 +13,14 @@ let dogWidth = catWidth;
 let dogHeight = catHeight;
 let pianoWidth = catWidth;
 let pianoHeight = catHeight;
-let catSpeed = 0.5;
-let dogSpeed = 0.7;
-let pianoSpeed = 1.4;
-let laserSpeed = 1.5;
+let catSpeed = boxSize * 0.02;
+let dogSpeed = boxSize * 0.03;
+let pianoSpeed = boxSize * 0.065;
+let laserSpeed = boxSize * 0.06;
 let playerX = 0;
 let playerY = 0;
 
-let speed = 2;
+let playerSpeed = boxSize * 0.06;
 let rotationSpeed = 2;
 let frameCount = 0;
 let playerScore = 0;
@@ -40,10 +40,11 @@ let itemCounts = {
 	defenses: 0
 };
 
-let level = 1;
+let level = 5;
 
 let isPaused = false;
 let isShopOpen = false;
+let lasersDisabled = false;
 
 const scoreDisplay = document.getElementById("score-display");
 const levelDisplay = document.getElementById("level-display");
@@ -207,8 +208,8 @@ function gameLoop() {
 	drawBackground();
 	if (frameCount) if (frameCount % 120 === 0) spawnEnemies();
 	drawEnemies();
-	if (frameCount % 200 === 0 && level >= 5) spawnLasers();
-	drawLasers();
+	if (frameCount % 200 === 0 && level >= 5 & !lasersDisabled) spawnLasers();
+	if (!lasersDisabled) drawLasers();
 	if (frameCount % 450 === 0) spawnCats();
 	updateCats();
 	drawCats();
@@ -226,13 +227,14 @@ function gameLoop() {
 	}
 	drawPlayer();
 	boxCollision();
-	laserCollision();
+	if (!lasersDisabled) laserCollision();
 	catCollision();
 	dogCollision();
 	pianoCollision();
 	checkScore();
 	checkHealth();
 	updateCoins();
+	disableLasers();
 	window.requestAnimationFrame(gameLoop);
 }
 
@@ -353,7 +355,7 @@ const moveUp = () => {
 		playerY = 0;
 		return;
 	}
-	playerY -= speed;
+	playerY -= playerSpeed;
 };
 
 const moveDown = () => {
@@ -361,18 +363,18 @@ const moveDown = () => {
 		playerY = ctx.canvas.height - playerHeight;
 		return;
 	}
-	playerY += speed;
+	playerY += playerSpeed;
 };
 
 const moveLeft = () => {
-	playerX -= speed;
+	playerX -= playerSpeed;
 	if (playerX + playerWidth < 0) {
 		playerX = ctx.canvas.width;
 	}
 };
 
 const moveRight = () => {
-	playerX += speed;
+	playerX += playerSpeed;
 	if (playerX > ctx.canvas.width) {
 		playerX = -playerWidth;
 	}
@@ -622,14 +624,35 @@ function showPowerUp(item) {
 	}
 }
 
-function hidePowerUp(item) {
+function hidePowerUp(item, imgToHide = null) {
 	const powerUpImgs = document.querySelectorAll(`.power-up-img.${item}`);
 	for (let i = 0; i < powerUpImgs.length; i++) {
-		if (powerUpImgs[i].style.display === "flex") {
+		if (
+			getComputedStyle(powerUpImgs[i]).display !== "none" &&
+			(imgToHide === null || powerUpImgs[i] === imgToHide)
+		) {
 			powerUpImgs[i].style.display = "none";
 			break;
 		}
 	}
+}
+
+function disableLasers() {
+	const defenseImgs = document.querySelectorAll(".power-up-img.defense");
+	defenseImgs.forEach((img) => {
+		img.addEventListener("click", () => {
+			if (lasersDisabled) return;
+			itemCounts.defenses--;
+			img.src = "defenseactive.png";
+			lasersDisabled = true;
+			setTimeout(() => {
+				img.src = "defense.png"
+				lasers = [];
+				lasersDisabled = false;
+				hidePowerUp("defense", img)
+			}, 15000);
+		});
+	});
 }
 
 shopBtn.addEventListener("click", () => {
