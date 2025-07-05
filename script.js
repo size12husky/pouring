@@ -3,20 +3,21 @@ const ctx = c.getContext("2d");
 const backgroundMusic = new Audio("catsanddogs.wav");
 let boxSize = window.innerWidth / 20;
 let playerWidth = boxSize * 1.5;
-let playerHeight = boxSize / 1.2;
+let playerHeight = boxSize / 1.1;
 let bucketSize = boxSize * 0.7;
 let laserWidth = boxSize / 3;
 let laserHeight = boxSize * 2;
 let catWidth = boxSize;
 let catHeight = boxSize * 0.8;
 let dogWidth = catWidth;
-let dogHeight = catHeight;
+let dogHeight = catHeight * 1.1;
 let pianoWidth = catWidth;
 let pianoHeight = catHeight;
 let catSpeed = boxSize * 0.02;
 let dogSpeed = boxSize * 0.03;
 let pianoSpeed = boxSize * 0.065;
 let laserSpeed = boxSize * 0.06;
+let pelletSpeed = boxSize * 0.1;
 let playerX = 0;
 let playerY = 0;
 
@@ -31,20 +32,23 @@ let lasers = [];
 let cats = [];
 let dogs = [];
 let pianos = [];
+let pellets = [];
 
 //Power Ups
 let itemCounts = {
 	bowl: 0,
 	bone: 0,
 	beethoven: 0,
-	defenses: 0
+	defenses: 0,
+	turrets: 0,
 };
 
-let level = 5;
+let level = 1;
 
 let isPaused = false;
 let isShopOpen = false;
 let lasersDisabled = false;
+let turretEnabled = false;
 
 const scoreDisplay = document.getElementById("score-display");
 const levelDisplay = document.getElementById("level-display");
@@ -58,13 +62,14 @@ const bucketImg = document.getElementById("bucket-img");
 const coinImg = document.getElementById("coin-img");
 const cloudImg = document.getElementById("cloud-img");
 const cloudAltImg = document.getElementById("cloud-alt-img");
+const jetPackCatImg = document.getElementById("jet-pack-cat-img");
+const jetPackDogImg = document.getElementById("jet-pack-dog-img");
 const backgroundImg = document.getElementById("background-img");
 const healthBar = document.querySelectorAll("#health-bar img");
 const shopBtn = document.getElementById("shop-btn");
 const shopPanel = document.getElementById("shop-panel");
 const shopCoinsDisplay = document.querySelector(".shop-coins-display");
 const coinCounter = document.getElementById("player-coins");
-
 const shopBtns = document.querySelectorAll(".buy-btn");
 const bowlBtn = document.getElementById("bowl-btn");
 const boneBtn = document.getElementById("bone-btn");
@@ -78,11 +83,29 @@ const keys = {
 };
 
 const shopItems = {
-	bowl: 15,
-	bone: 25,
-	beethoven: 35,
-	defense: 50
+	bowl: 10,
+	bone: 20,
+	beethoven: 30,
+	defense: 40,
+	turret: 50,
 };
+
+class Pellet {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	draw(ctx) {
+		ctx.fillStyle = "red";
+		ctx.fillRect(
+			this.x + boxSize * 0.7,
+			this.y - boxSize * 0.2,
+			boxSize * 0.1,
+			boxSize * 0.4
+		);
+	}
+}
 
 class Laser {
 	constructor(x, y) {
@@ -153,10 +176,11 @@ class Piano {
 }
 
 class Bucket {
-	constructor(x, y, timeLeft) {
+	constructor(x, y, timeLeft, isCoin) {
 		this.x = x;
 		this.y = y;
 		this.timeLeft = timeLeft;
+		this.isCoin = isCoin;
 	}
 
 	update() {
@@ -164,15 +188,44 @@ class Bucket {
 	}
 
 	draw(ctx) {
-		if (
+		const blinking =
 			(this.timeLeft < 300 && this.timeLeft > 250) ||
 			(this.timeLeft < 200 && this.timeLeft > 150) ||
-			(this.timeLeft < 100 && this.timeLeft > 50)
-		) {
-			ctx.drawImage(coinImg, this.x, this.y, bucketSize, bucketSize);
+			(this.timeLeft < 100 && this.timeLeft > 50);
+
+		if (this.isCoin) {
+			if (blinking) {
+				ctx.drawImage(coinImg, this.x, this.y, bucketSize, bucketSize);
+			}
 		} else {
-			ctx.drawImage(bucketImg, this.x, this.y, bucketSize, bucketSize);
+			if (blinking) {
+				ctx.drawImage(coinImg, this.x, this.y, bucketSize, bucketSize);
+			} else {
+				ctx.drawImage(bucketImg, this.x, this.y, bucketSize, bucketSize);
+			}
 		}
+	}
+}
+
+class JetPackCat {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	draw(ctx) {
+		ctx.drawImage(jetPackCatImg, this.x, this.y, dogWidth, dogHeight)
+	}
+}
+
+class JetPackDog {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	draw(ctx) {
+		ctx.drawImage(jetPackDogImg, this.x, this.y, dogWidth, dogHeight)
 	}
 }
 
@@ -204,11 +257,18 @@ function gameLoop() {
 	if (isPaused) return;
 	frameCount++;
 	updateEnemies();
+	//Filter arrays for screen bounds
+	buckets = buckets.filter((b) => b.timeLeft > 0);
+	cats = cats.filter((c) => c.y <= ctx.canvas.height);
+	dogs = dogs.filter((d) => d.y <= ctx.canvas.height);
+	pianos = pianos.filter((p) => p.y <= ctx.canvas.height);
+	lasers = lasers.filter((l) => l.y <= ctx.canvas.height);
+
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	drawBackground();
 	if (frameCount) if (frameCount % 120 === 0) spawnEnemies();
 	drawEnemies();
-	if (frameCount % 200 === 0 && level >= 5 & !lasersDisabled) spawnLasers();
+	if (frameCount % 200 === 0 && (level >= 5) & !lasersDisabled) spawnLasers();
 	if (!lasersDisabled) drawLasers();
 	if (frameCount % 450 === 0) spawnCats();
 	updateCats();
@@ -226,7 +286,12 @@ function gameLoop() {
 		if (buckets[i].timeLeft === 0) buckets.shift();
 	}
 	drawPlayer();
-	boxCollision();
+	drawPellets();
+	catTurretCollision();
+	dogTurretCollision();
+	pianoTurretCollision();
+	laserTurretCollision();
+	bucketCollision();
 	if (!lasersDisabled) laserCollision();
 	catCollision();
 	dogCollision();
@@ -257,6 +322,17 @@ function drawPlayer() {
 
 function drawPlayerAlt() {
 	ctx.drawImage(cloudAltImg, playerX, playerY, playerWidth, playerHeight);
+}
+
+function spawnPellet() {
+	pellets.push(new Pellet(playerX, playerY));
+}
+
+function drawPellets() {
+	for (const pellet of pellets) {
+		pellet.draw(ctx);
+		pellet.y -= pelletSpeed;
+	}
 }
 
 function spawnEnemies() {
@@ -312,6 +388,15 @@ function drawCats() {
 	for (const cat of cats) {
 		cat.draw(ctx);
 	}
+}
+
+function spawnJetPackCats() {
+	const padding = catWidth;
+	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
+	let rotationSpeed = Math.random() < 0.5 ? 0.05 : -0.05;
+	cats.push(new Cat(randomX, 0, 0, rotationSpeed));
+	const catAudio = new Audio("meow.wav");
+	catAudio.play();
 }
 
 function spawnDogs() {
@@ -380,8 +465,7 @@ const moveRight = () => {
 	}
 };
 
-function boxCollision() {
-	let isBonus = false;
+function bucketCollision() {
 	for (let i = 0; i < buckets.length; i++) {
 		const e = buckets[i];
 		if (
@@ -412,24 +496,6 @@ function boxCollision() {
 	return false;
 }
 
-function laserCollision() {
-	for (let i = 0; i < lasers.length; i++) {
-		const l = lasers[i];
-		if (
-			playerX < l.x + laserWidth &&
-			playerX + boxSize > l.x &&
-			playerY < l.y + laserHeight &&
-			playerY + boxSize > l.y
-		) {
-			const hitAudio = new Audio("woosh.wav");
-			hitAudio.play();
-			hideHeart();
-			lasers.splice(i, 1);
-			return true;
-		}
-	}
-	return false;
-}
 function catCollision() {
 	for (let i = 0; i < cats.length; i++) {
 		const l = cats[i];
@@ -450,6 +516,27 @@ function catCollision() {
 			hideHeart();
 			cats.splice(i, 1);
 			return true;
+		}
+	}
+	return false;
+}
+
+function catTurretCollision() {
+	for (let i = 0; i < cats.length; i++) {
+		const l = cats[i];
+		for (let j = 0; j < pellets.length; j++) {
+			if (
+				pellets[j].x < l.x + catWidth &&
+				pellets[j].x + boxSize > l.x &&
+				pellets[j].y < l.y + catHeight &&
+				pellets[j].y + boxSize > l.y
+			) {
+				const coinHitAudio = new Audio("coin.mp3");
+				coinHitAudio.play();
+				buckets.push(new Bucket(l.x, l.y, 300, true));
+				cats.splice(i, 1);
+				return true;
+			}
 		}
 	}
 	return false;
@@ -480,6 +567,27 @@ function dogCollision() {
 	return false;
 }
 
+function dogTurretCollision() {
+	for (let i = 0; i < dogs.length; i++) {
+		const l = dogs[i];
+		for (let j = 0; j < pellets.length; j++) {
+			if (
+				pellets[j].x < l.x + dogWidth &&
+				pellets[j].x + boxSize > l.x &&
+				pellets[j].y < l.y + dogHeight &&
+				pellets[j].y + boxSize > l.y
+			) {
+				const coinHitAudio = new Audio("coin.mp3");
+				coinHitAudio.play();
+				buckets.push(new Bucket(l.x, l.y, 300, true));
+				dogs.splice(i, 1);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 function pianoCollision() {
 	for (let i = 0; i < pianos.length; i++) {
 		const l = pianos[i];
@@ -500,6 +608,67 @@ function pianoCollision() {
 			hideHeart();
 			pianos.splice(i, 1);
 			return true;
+		}
+	}
+	return false;
+}
+
+function pianoTurretCollision() {
+	for (let i = 0; i < pianos.length; i++) {
+		const l = pianos[i];
+		for (let j = 0; j < pellets.length; j++) {
+			if (
+				pellets[j].x < l.x + pianoWidth &&
+				pellets[j].x + boxSize > l.x &&
+				pellets[j].y < l.y + pianoHeight &&
+				pellets[j].y + boxSize > l.y
+			) {
+				const coinHitAudio = new Audio("coin.mp3");
+				coinHitAudio.play();
+				buckets.push(new Bucket(l.x, l.y, 300, true));
+				pianos.splice(i, 1);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+function laserCollision() {
+	for (let i = 0; i < lasers.length; i++) {
+		const l = lasers[i];
+		if (
+			playerX < l.x + laserWidth &&
+			playerX + boxSize > l.x &&
+			playerY < l.y + laserHeight &&
+			playerY + boxSize > l.y
+		) {
+			const hitAudio = new Audio("woosh.wav");
+			hitAudio.play();
+			hideHeart();
+			lasers.splice(i, 1);
+			return true;
+		}
+	}
+	return false;
+}
+
+function laserTurretCollision() {
+	for (let i = 0; i < lasers.length; i++) {
+		const l = lasers[i];
+		for (let j = 0; j < pellets.length; j++) {
+			if (
+				pellets[j].x < l.x + laserWidth &&
+				pellets[j].x + boxSize > l.x &&
+				pellets[j].y < l.y + laserHeight &&
+				pellets[j].y + boxSize > l.y
+			) {
+				const coinHitAudio = new Audio("coin.mp3");
+				coinHitAudio.play();
+				buckets.push(new Bucket(l.x, l.y, 300, true));
+				lasers.splice(i, 1);
+				return true;
+			}
 		}
 	}
 	return false;
@@ -556,6 +725,7 @@ function gameOver() {
 	for (let i = 0; i < healthBar.length; i++) {
 		healthBar[i].style.display = "flex";
 	}
+	hideAllPowerUps();
 	startGameBtn.style.display = "block";
 	startGameBtn.innerText = "PLAY AGAIN";
 	buckets = [];
@@ -563,6 +733,9 @@ function gameOver() {
 	cats = [];
 	dogs = [];
 	pianos = [];
+	turretEnabled = false;
+	cloudImg.src = "cloud.png";
+	playerHeight = boxSize / 1.1;
 	window.cancelAnimationFrame();
 }
 
@@ -605,7 +778,11 @@ function buyItem(item) {
 		coins -= shopItems[item];
 		coinDisplay.innerText = `Coins: ${coins}`;
 		coinCounter.innerText = coins;
-		showPowerUp(item);
+		if (item !== "turret") {
+			showPowerUp(item);
+		} else {
+			enableTurret();
+		}
 	} else {
 		shopCoinsDisplay.style.color = "red";
 		setTimeout(() => {
@@ -637,6 +814,15 @@ function hidePowerUp(item, imgToHide = null) {
 	}
 }
 
+function hideAllPowerUps() {
+	const powerUpImgs = document.querySelectorAll(`.power-up-img`);
+	powerUpImgs.forEach((img) => {
+		if (getComputedStyle(img) !== "none") {
+			img.style.display = "none";
+		}
+	});
+}
+
 function disableLasers() {
 	const defenseImgs = document.querySelectorAll(".power-up-img.defense");
 	defenseImgs.forEach((img) => {
@@ -646,13 +832,19 @@ function disableLasers() {
 			img.src = "defenseactive.png";
 			lasersDisabled = true;
 			setTimeout(() => {
-				img.src = "defense.png"
+				img.src = "defense.png";
 				lasers = [];
 				lasersDisabled = false;
-				hidePowerUp("defense", img)
+				hidePowerUp("defense", img);
 			}, 15000);
 		});
 	});
+}
+
+function enableTurret() {
+	turretEnabled = true;
+	cloudImg.src = "cloudturret.png";
+	playerHeight = boxSize * 1.2;
 }
 
 shopBtn.addEventListener("click", () => {
@@ -670,7 +862,11 @@ document.addEventListener("keydown", (e) => {
 	if (e.key.toLowerCase() === "p") shopHandler();
 });
 
+document.addEventListener("keydown", (e) => {
+	if (e.key.toLowerCase() === "m" && turretEnabled) spawnPellet();
+});
+
 window.addEventListener("resize", () => {
 	initCanvas();
-	boxSize = window.innerWidth / 20
-})
+	boxSize = window.innerWidth / 20;
+});
