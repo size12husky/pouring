@@ -28,10 +28,12 @@ let playerScore = 0;
 let playerHealth = 3;
 let coins = 1000;
 let buckets = [];
-let lasers = [];
 let cats = [];
 let dogs = [];
 let pianos = [];
+let lasers = [];
+let jetPackCats = [];
+let jetPackDogs = [];
 let pellets = [];
 
 //Power Ups
@@ -208,24 +210,84 @@ class Bucket {
 }
 
 class JetPackCat {
-	constructor(x, y) {
+	constructor(x, y, targetY, isHovering, hoverDir) {
 		this.x = x;
 		this.y = y;
+		this.targetY = targetY;
+		this.isHovering = isHovering;
+		this.hoverDir = hoverDir;
+	}
+
+	update() {
+		const topHoverY = this.targetY - (ctx.canvas.height / 40);
+		const bottomHoverY = this.targetY + (ctx.canvas.height / 40);
+
+		if (!this.isHovering) {
+			if (this.y < this.targetY) {
+				this.y += catSpeed / 2;
+				if (this.y >= this.targetY) {
+					this.y = this.targetY;
+					this.isHovering = true;
+					this.hoverDir = 1;
+				}
+			}
+		} else {
+			this.y += (catSpeed / 3) * this.hoverDir;
+
+			if (this.y >= bottomHoverY) {
+				this.y = bottomHoverY;
+				this.hoverDir = -1;
+			}
+			if (this.y <= topHoverY) {
+				this.y = topHoverY;
+				this.hoverDir = 1;
+			}
+		}
 	}
 
 	draw(ctx) {
-		ctx.drawImage(jetPackCatImg, this.x, this.y, dogWidth, dogHeight)
+		ctx.drawImage(jetPackCatImg, this.x, this.y, dogWidth, dogHeight);
 	}
 }
 
 class JetPackDog {
-	constructor(x, y) {
+	constructor(x, y, targetY, isHovering, hoverDir) {
 		this.x = x;
 		this.y = y;
+		this.targetY = targetY;
+		this.isHovering = isHovering;
+		this.hoverDir = hoverDir;
+	}
+
+	update() {
+		const topHoverY = this.targetY - (ctx.canvas.height / 20);
+		const bottomHoverY = this.targetY + (ctx.canvas.height / 20);
+
+		if (!this.isHovering) {
+			if (this.y < this.targetY) {
+				this.y += catSpeed / 2;
+				if (this.y >= this.targetY) {
+					this.y = this.targetY;
+					this.isHovering = true;
+					this.hoverDir = 1;
+				}
+			}
+		} else {
+			this.y += (dogSpeed / 3) * this.hoverDir;
+
+			if (this.y >= bottomHoverY) {
+				this.y = bottomHoverY;
+				this.hoverDir = -1;
+			}
+			if (this.y <= topHoverY) {
+				this.y = topHoverY;
+				this.hoverDir = 1;
+			}
+		}
 	}
 
 	draw(ctx) {
-		ctx.drawImage(jetPackDogImg, this.x, this.y, dogWidth, dogHeight)
+		ctx.drawImage(jetPackDogImg, this.x, this.y, dogWidth, dogHeight);
 	}
 }
 
@@ -263,6 +325,7 @@ function gameLoop() {
 	dogs = dogs.filter((d) => d.y <= ctx.canvas.height);
 	pianos = pianos.filter((p) => p.y <= ctx.canvas.height);
 	lasers = lasers.filter((l) => l.y <= ctx.canvas.height);
+	pellets = pellets.filter((p) => p.y >= 0);
 
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	drawBackground();
@@ -273,9 +336,13 @@ function gameLoop() {
 	if (frameCount % 450 === 0) spawnCats();
 	updateCats();
 	drawCats();
+	if (frameCount % 1000 === 0) spawnJetPackCats();
+	drawJetPackCats();
 	if (frameCount % 700 === 0) spawnDogs();
 	updateDogs();
 	drawDogs();
+	if (frameCount % 1900 === 0) spawnJetPackDogs();
+	drawJetPackDogs();
 	if (frameCount % 1300 === 0 && level >= 3) spawnPianos();
 	drawPianos();
 	if (keys.w) moveUp();
@@ -393,10 +460,17 @@ function drawCats() {
 function spawnJetPackCats() {
 	const padding = catWidth;
 	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
-	let rotationSpeed = Math.random() < 0.5 ? 0.05 : -0.05;
-	cats.push(new Cat(randomX, 0, 0, rotationSpeed));
+	const targetY = (Math.random() * ctx.canvas.height) / 2;
+	jetPackCats.push(new JetPackCat(randomX, 0, targetY, false, 1));
 	const catAudio = new Audio("meow.wav");
 	catAudio.play();
+}
+
+function drawJetPackCats() {
+	for (const cat of jetPackCats) {
+		cat.update();
+		cat.draw(ctx);
+	}
 }
 
 function spawnDogs() {
@@ -416,6 +490,22 @@ function updateDogs() {
 
 function drawDogs() {
 	for (const dog of dogs) {
+		dog.draw(ctx);
+	}
+}
+
+function spawnJetPackDogs() {
+	const padding = dogWidth;
+	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
+	const targetY = (Math.random() * ctx.canvas.height) / 2;
+	jetPackDogs.push(new JetPackDog(randomX, 0, targetY, false, 1));
+	const dogAudio = new Audio("bark.mp3");
+	dogAudio.play();
+}
+
+function drawJetPackDogs() {
+	for (const dog of jetPackDogs) {
+		dog.update();
 		dog.draw(ctx);
 	}
 }
@@ -691,10 +781,12 @@ function checkScore() {
 		initCanvas();
 		frameCount = 0;
 		buckets = [];
-		lasers = [];
 		cats = [];
 		dogs = [];
 		pianos = [];
+		lasers = [];
+		jetPackCats = [];
+		jetPackDogs = [];
 		laserSpeed += 0.2;
 		catSpeed += 0.2;
 		dogSpeed += 0.2;
@@ -729,10 +821,12 @@ function gameOver() {
 	startGameBtn.style.display = "block";
 	startGameBtn.innerText = "PLAY AGAIN";
 	buckets = [];
-	lasers = [];
 	cats = [];
 	dogs = [];
 	pianos = [];
+	lasers = [];
+	jetPackCats = [];
+	jetPackDogs = [];
 	turretEnabled = false;
 	cloudImg.src = "cloud.png";
 	playerHeight = boxSize / 1.1;
