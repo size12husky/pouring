@@ -7,34 +7,70 @@
 		<link rel="stylesheet" href="style.css" />
 	</head>
 	<body>
+		<h1>Pouring!</h1>
 		<div id="instructions-container">
 			<h2>Instructions</h2>
-			<ul id="instructions">
-				<li class="instruction-section">
-						<h3>Controls</h3>
-						<ul id="controls-list">
-							<li>W - ↑</li>
-							<li>A - ←</li>
-							<li>S - ↓</li>
-							<li>D - →</li>
-						</ul>
-				</li>
-				<li class="instruction-section">
-					<h3>How to Play</h3>
-					<ul id="gameplay-list">
 
-					</ul>
-				</li>
-				<li class="instruction-section">
-					<h3>Power-Ups</h3>
-					<ul id="power-ups-list">
+			<div class="instructions-section">
+				<h3>Controls</h3>
 
-					</ul>
-				</li>
-			</ul>
+				<p class="controls-p">
+					<span class="keyboard-key">W</span><span class="keyboard-key">A</span
+					><span class="keyboard-key">S</span
+					><span class="keyboard-key">D</span>
+					to move
+				</p>
+
+				<p class="controls-p"><span class="keyboard-key">P</span> to open shop</p>
+				<p class="controls-p"><span class="keyboard-key">M</span> to fire turret</p>
+			</div>
+
+			<div class="instructions-section">
+				<h3>Gameplay</h3>
+				<p>- Avoid falling obstacles and collect buckets</p>
+				<p>- 20 buckets gets you to the next level!</p>
+				<p>- Buckets turn to coins before they disappear. Collect coins to buy power-ups in the shop!</p>
+				<p>- Obstacles fall faster each level</p>
+				<p>- Look out for new obstacles as you progress!</p>
+			</div>
+
+			<div class="instructions-section">
+				<h3>Power-Ups</h3>
+				<ul id="instructions">
+					<li>
+						<h4>Bowl, Bone, and Beethoven</h4>
+						<img id="bowl-menu" src="bowl.png" />
+
+						<img id="bone-menu" src="bone.png" />
+						<img id="beethoven-menu" src="beethoven.png" />
+						<p>
+							These power-ups are a one-time defense against a certain obstacle.
+							Purchase up to 3 in the shop and activate by clicking their icon
+							in the top-right of the screen.
+						</p>
+					</li>
+					<li>
+						<h4>Laser Defense System</h4>
+						<img id="defense-menu" src="defense.png" />
+						<img id="defense-active-menu" src="defenseactive.png" />
+						<p>
+							Purchase up to 3 laser defense codes in the shop. Activate by
+							clicking the icon in the top-right of the screen. Activating will
+							disable lasers for 15 seconds.
+						</p>
+					</li>
+					<li display: flex>
+						<h4>Turret</h4>
+						<img id="turret-menu" src="turret.png" />
+						<p>
+							Activate the turret by purchasing it in the shop! Fire the Turret
+							with <span class="keyboard-key">M</span>. Enemies hit with the turret will drop coins!
+						</p>
+					</li>
+				</ul>
+			</div>
 		</div>
 		<div id="game-wrapper">
-			<h1>Pouring!</h1>
 			<div id="score-wrapper">
 				<p id="level-display">Level 1</p>
 				<p id="score-display">Buckets: 0</p>
