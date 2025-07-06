@@ -45,7 +45,7 @@ let itemCounts = {
 	turrets: 0,
 };
 
-let level = 1;
+let level = 9;
 
 let isPaused = false;
 let isShopOpen = false;
@@ -216,11 +216,21 @@ class JetPackCat {
 		this.targetY = targetY;
 		this.isHovering = isHovering;
 		this.hoverDir = hoverDir;
+
+		this.bullets = [];
+	}
+
+	shoot() {
+		this.bullets.push({
+			x: this.x + dogWidth / 2,
+			y: this.y + dogHeight,
+			speed: 2,
+		});
 	}
 
 	update() {
-		const topHoverY = this.targetY - (ctx.canvas.height / 40);
-		const bottomHoverY = this.targetY + (ctx.canvas.height / 40);
+		const topHoverY = this.targetY - ctx.canvas.height / 40;
+		const bottomHoverY = this.targetY + ctx.canvas.height / 40;
 
 		if (!this.isHovering) {
 			if (this.y < this.targetY) {
@@ -232,6 +242,8 @@ class JetPackCat {
 				}
 			}
 		} else {
+			this.bullets.forEach((b) => (b.y += b.speed));
+			this.bullets = this.bullets.filter((b) => b.y <= ctx.canvas.height);
 			this.y += (catSpeed / 3) * this.hoverDir;
 
 			if (this.y >= bottomHoverY) {
@@ -247,6 +259,11 @@ class JetPackCat {
 
 	draw(ctx) {
 		ctx.drawImage(jetPackCatImg, this.x, this.y, dogWidth, dogHeight);
+		if (!this.isHovering) return;
+		this.bullets.forEach((b) => {
+			ctx.fillStyle = "red";
+			ctx.fillRect(b.x, b.y, 5, 10);
+		});
 	}
 }
 
@@ -257,22 +274,33 @@ class JetPackDog {
 		this.targetY = targetY;
 		this.isHovering = isHovering;
 		this.hoverDir = hoverDir;
+
+		this.bullets = [];
+	}
+
+	shoot() {
+		this.bullets.push({
+			x: this.x + dogWidth / 2,
+			y: this.y - dogHeight,
+			speed: 2,
+		});
 	}
 
 	update() {
-		const topHoverY = this.targetY - (ctx.canvas.height / 20);
-		const bottomHoverY = this.targetY + (ctx.canvas.height / 20);
+		const topHoverY = this.targetY - ctx.canvas.height / 40;
+		const bottomHoverY = this.targetY + ctx.canvas.height / 40;
 
 		if (!this.isHovering) {
-			if (this.y < this.targetY) {
-				this.y += catSpeed / 2;
-				if (this.y >= this.targetY) {
+			if (this.y > this.targetY) {
+				this.y -= dogSpeed / 2;
+				if (this.y <= this.targetY) {
 					this.y = this.targetY;
 					this.isHovering = true;
-					this.hoverDir = 1;
+					this.hoverDir = 1; // start by hovering down
 				}
 			}
 		} else {
+			this.bullets.forEach((b) => (b.y -= b.speed));
 			this.y += (dogSpeed / 3) * this.hoverDir;
 
 			if (this.y >= bottomHoverY) {
@@ -288,7 +316,67 @@ class JetPackDog {
 
 	draw(ctx) {
 		ctx.drawImage(jetPackDogImg, this.x, this.y, dogWidth, dogHeight);
+		if (!this.isHovering) return;
+		this.bullets.forEach((b) => {
+			ctx.fillStyle = "red";
+			ctx.fillRect(b.x, b.y, 5, 10);
+		});
 	}
+}
+
+function shootBullets() {
+	for (const cat of jetPackCats) {
+		if ((frameCount % 500 === 0) && cat.isHovering) {
+			cat.shoot();
+		}
+	}
+	for (const dog of jetPackDogs) {
+		if ((frameCount % 300 === 0) && dog.isHovering) {
+			dog.shoot();
+		}
+	}
+}
+
+function catBulletCollision() {
+	for (let i = 0; i < jetPackCats.length; i++) {
+		const bullets = jetPackCats[i].bullets;
+		for (let j = 0; j < bullets.length; j++) {
+			if (
+				playerX < bullets[j].x + dogWidth &&
+				playerX + boxSize > bullets[j].x &&
+				playerY < bullets[j].y + dogHeight &&
+				playerY + boxSize > bullets[j].y
+			) {
+				const hitAudio = new Audio("woosh.wav");
+				hitAudio.play();
+				bullets.splice(j, 1);
+				hideHeart();
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+function dogBulletCollision() {
+	for (let i = 0; i < jetPackDogs.length; i++) {
+		const bullets = jetPackDogs[i].bullets;
+		for (let j = 0; j < bullets.length; j++) {
+			if (
+				playerX < bullets[j].x + dogWidth &&
+				playerX + boxSize > bullets[j].x &&
+				playerY < bullets[j].y + dogHeight &&
+				playerY + boxSize > bullets[j].y
+			) {
+				const hitAudio = new Audio("woosh.wav");
+				hitAudio.play();
+				bullets.splice(j, 1);
+				hideHeart();
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 document.addEventListener("keydown", (e) => {
@@ -336,12 +424,13 @@ function gameLoop() {
 	if (frameCount % 450 === 0) spawnCats();
 	updateCats();
 	drawCats();
-	if (frameCount % 1000 === 0) spawnJetPackCats();
+	if (frameCount % 1000 === 0 && level >= 7) spawnJetPackCats();
 	drawJetPackCats();
+	shootBullets();
 	if (frameCount % 700 === 0) spawnDogs();
 	updateDogs();
 	drawDogs();
-	if (frameCount % 1900 === 0) spawnJetPackDogs();
+	if (frameCount % 1900 === 0 && level >= 9) spawnJetPackDogs();
 	drawJetPackDogs();
 	if (frameCount % 1300 === 0 && level >= 3) spawnPianos();
 	drawPianos();
@@ -355,13 +444,19 @@ function gameLoop() {
 	drawPlayer();
 	drawPellets();
 	catTurretCollision();
-	dogTurretCollision();
+	catCollision();
+	jetPackCatCollision();
+	catBulletCollision();
+	jetPackCatTurretCollision();
 	pianoTurretCollision();
 	laserTurretCollision();
 	bucketCollision();
 	if (!lasersDisabled) laserCollision();
-	catCollision();
 	dogCollision();
+	dogTurretCollision();
+	jetPackDogCollision();
+	jetPackDogTurretCollision();
+	dogBulletCollision();
 	pianoCollision();
 	checkScore();
 	checkHealth();
@@ -423,7 +518,8 @@ function drawEnemies() {
 }
 
 function spawnLasers() {
-	const randomX = Math.random() * ctx.canvas.width;
+	const padding = laserWidth;
+	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
 	lasers.push(new Laser(randomX, 0));
 	const laserAudio = new Audio("laser.wav");
 	laserAudio.play();
@@ -497,8 +593,13 @@ function drawDogs() {
 function spawnJetPackDogs() {
 	const padding = dogWidth;
 	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
-	const targetY = (Math.random() * ctx.canvas.height) / 2;
-	jetPackDogs.push(new JetPackDog(randomX, 0, targetY, false, 1));
+	const minY = ctx.canvas.height / 2;
+	const maxY = ctx.canvas.height - dogHeight;
+	const targetY = Math.random() * (maxY - minY) + minY;
+
+	jetPackDogs.push(
+		new JetPackDog(randomX, ctx.canvas.height, targetY, false, 1)
+	);
 	const dogAudio = new Audio("bark.mp3");
 	dogAudio.play();
 }
@@ -611,6 +712,46 @@ function catCollision() {
 	return false;
 }
 
+function jetPackCatCollision() {
+	for (let i = 0; i < jetPackCats.length; i++) {
+		const l = jetPackCats[i];
+		if (
+			playerX < l.x + dogWidth &&
+			playerX + boxSize > l.x &&
+			playerY < l.y + dogHeight &&
+			playerY + boxSize > l.y
+		) {
+			const hitAudio = new Audio("woosh.wav");
+			hitAudio.play();
+			hideHeart();
+			jetPackCats.splice(i, 1);
+			return true;
+		}
+	}
+	return false;
+}
+
+function jetPackCatTurretCollision() {
+	for (let i = 0; i < jetPackCats.length; i++) {
+		const l = jetPackCats[i];
+		for (let j = 0; j < pellets.length; j++) {
+			if (
+				pellets[j].x < l.x + dogWidth &&
+				pellets[j].x + boxSize > l.x &&
+				pellets[j].y < l.y + dogHeight &&
+				pellets[j].y + boxSize > l.y
+			) {
+				const coinHitAudio = new Audio("coin.mp3");
+				coinHitAudio.play();
+				buckets.push(new Bucket(l.x, l.y, 300, true));
+				jetPackCats.splice(i, 1);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 function catTurretCollision() {
 	for (let i = 0; i < cats.length; i++) {
 		const l = cats[i];
@@ -652,6 +793,46 @@ function dogCollision() {
 			hideHeart();
 			dogs.splice(i, 1);
 			return true;
+		}
+	}
+	return false;
+}
+
+function jetPackDogCollision() {
+	for (let i = 0; i < jetPackDogs.length; i++) {
+		const l = jetPackDogs[i];
+		if (
+			playerX < l.x + dogWidth &&
+			playerX + boxSize > l.x &&
+			playerY < l.y + dogHeight &&
+			playerY + boxSize > l.y
+		) {
+			const hitAudio = new Audio("woosh.wav");
+			hitAudio.play();
+			hideHeart();
+			jetPackDogs.splice(i, 1);
+			return true;
+		}
+	}
+	return false;
+}
+
+function jetPackDogTurretCollision() {
+	for (let i = 0; i < jetPackDogs.length; i++) {
+		const l = jetPackDogs[i];
+		for (let j = 0; j < pellets.length; j++) {
+			if (
+				pellets[j].x < l.x + dogWidth &&
+				pellets[j].x + boxSize > l.x &&
+				pellets[j].y < l.y + dogHeight &&
+				pellets[j].y + boxSize > l.y
+			) {
+				const coinHitAudio = new Audio("coin.mp3");
+				coinHitAudio.play();
+				buckets.push(new Bucket(l.x, l.y, 300, true));
+				jetPackDogs.splice(i, 1);
+				return true;
+			}
 		}
 	}
 	return false;

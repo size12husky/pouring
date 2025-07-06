@@ -16,6 +16,40 @@ body {
     justify-content: center;
 }
 
+h1 {
+    font-size: 3em;
+}
+
+#instructions-container {
+    position: absolute;
+	width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#instructions {
+    line-height: 2.5em;
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 40%;
+    flex-wrap: wrap;
+}
+
+.instruction-section {
+    width: 30%;
+}
+
+#game-wrapper {
+    display: none;
+    flex-direction: column;
+    text-align: center;
+}
+
+
 #health-bar {
     position: absolute;
     left: 0;
