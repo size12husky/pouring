@@ -45,7 +45,7 @@ let itemCounts = {
 	turrets: 0,
 };
 
-let level = 9;
+let level = 1;
 
 let isPaused = false;
 let isShopOpen = false;
@@ -326,12 +326,12 @@ class JetPackDog {
 
 function shootBullets() {
 	for (const cat of jetPackCats) {
-		if ((frameCount % 500 === 0) && cat.isHovering) {
+		if (frameCount % 500 === 0 && cat.isHovering) {
 			cat.shoot();
 		}
 	}
 	for (const dog of jetPackDogs) {
-		if ((frameCount % 300 === 0) && dog.isHovering) {
+		if (frameCount % 300 === 0 && dog.isHovering) {
 			dog.shoot();
 		}
 	}
@@ -444,17 +444,14 @@ function gameLoop() {
 	drawPlayer();
 	drawPellets();
 	catTurretCollision();
-	catCollision();
-	jetPackCatCollision();
+	
 	catBulletCollision();
 	jetPackCatTurretCollision();
 	pianoTurretCollision();
 	laserTurretCollision();
 	bucketCollision();
 	if (!lasersDisabled) laserCollision();
-	dogCollision();
 	dogTurretCollision();
-	jetPackDogCollision();
 	jetPackDogTurretCollision();
 	dogBulletCollision();
 	pianoCollision();
@@ -655,7 +652,7 @@ const moveRight = () => {
 		playerX = -playerWidth;
 	}
 };
-
+/*
 function bucketCollision() {
 	for (let i = 0; i < buckets.length; i++) {
 		const e = buckets[i];
@@ -730,7 +727,7 @@ function jetPackCatCollision() {
 	}
 	return false;
 }
-
+*/
 function jetPackCatTurretCollision() {
 	for (let i = 0; i < jetPackCats.length; i++) {
 		const l = jetPackCats[i];
@@ -772,7 +769,7 @@ function catTurretCollision() {
 	}
 	return false;
 }
-
+/*
 function dogCollision() {
 	for (let i = 0; i < dogs.length; i++) {
 		const l = dogs[i];
@@ -816,7 +813,7 @@ function jetPackDogCollision() {
 	}
 	return false;
 }
-
+*/
 function jetPackDogTurretCollision() {
 	for (let i = 0; i < jetPackDogs.length; i++) {
 		const l = jetPackDogs[i];
@@ -858,7 +855,7 @@ function dogTurretCollision() {
 	}
 	return false;
 }
-
+/*
 function pianoCollision() {
 	for (let i = 0; i < pianos.length; i++) {
 		const l = pianos[i];
@@ -883,7 +880,7 @@ function pianoCollision() {
 	}
 	return false;
 }
-
+*/
 function pianoTurretCollision() {
 	for (let i = 0; i < pianos.length; i++) {
 		const l = pianos[i];
@@ -904,7 +901,7 @@ function pianoTurretCollision() {
 	}
 	return false;
 }
-
+/*
 function laserCollision() {
 	for (let i = 0; i < lasers.length; i++) {
 		const l = lasers[i];
@@ -923,6 +920,7 @@ function laserCollision() {
 	}
 	return false;
 }
+	*/
 
 function laserTurretCollision() {
 	for (let i = 0; i < lasers.length; i++) {
@@ -956,7 +954,7 @@ function hideHeart() {
 }
 
 function checkScore() {
-	if (playerScore >= 20) {
+	if (playerScore >= 3) {
 		playerScore = 0;
 		level++;
 		initCanvas();
@@ -968,10 +966,10 @@ function checkScore() {
 		lasers = [];
 		jetPackCats = [];
 		jetPackDogs = [];
-		laserSpeed += 0.2;
-		catSpeed += 0.2;
-		dogSpeed += 0.2;
-		pianoSpeed += 0.2;
+		laserSpeed += boxSize * 0.005;
+		catSpeed += boxSize * 0.005;
+		dogSpeed += boxSize * 0.005;
+		pianoSpeed += boxSize * 0.005;
 		startGameBtn.style.display = "block";
 		startGameBtn.innerText = "NEXT LEVEL";
 		window.cancelAnimationFrame();
