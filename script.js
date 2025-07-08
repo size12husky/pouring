@@ -2,8 +2,6 @@ const c = document.getElementById("myCanvas");
 const ctx = c.getContext("2d");
 const backgroundMusic = new Audio("catsanddogs.wav");
 let boxSize = window.innerWidth / 20;
-let playerWidth = boxSize * 1.5;
-let playerHeight = boxSize / 1.1;
 let bucketSize = boxSize * 0.7;
 let laserWidth = boxSize / 3;
 let laserHeight = boxSize * 2;
@@ -18,23 +16,12 @@ let dogSpeed = boxSize * 0.03;
 let pianoSpeed = boxSize * 0.065;
 let laserSpeed = boxSize * 0.06;
 let pelletSpeed = boxSize * 0.1;
-let playerX = 0;
-let playerY = 0;
-
 let playerSpeed = boxSize * 0.06;
 let rotationSpeed = 2;
 let frameCount = 0;
 let playerScore = 0;
 let playerHealth = 3;
 let coins = 1000;
-let buckets = [];
-let cats = [];
-let dogs = [];
-let pianos = [];
-let lasers = [];
-let jetPackCats = [];
-let jetPackDogs = [];
-let pellets = [];
 
 //Power Ups
 let itemCounts = {
@@ -45,7 +32,7 @@ let itemCounts = {
 	turrets: 0,
 };
 
-let level = 1;
+let level = 7;
 
 let isPaused = false;
 let isShopOpen = false;
@@ -92,40 +79,67 @@ const shopItems = {
 	turret: 50,
 };
 
-class Pellet {
-	constructor(x, y) {
+class Player {
+	constructor(x, y, width, height, speed, health) {
 		this.x = x;
 		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.speed = speed;
+		this.health = health;
+	}
+}
+
+let entities = {
+	players: [
+		new Player(0, 0, boxSize * 1.5, boxSize / 1.1, playerSpeed, playerHealth),
+	],
+	buckets: [],
+	cats: [],
+	dogs: [],
+	pianos: [],
+	lasers: [],
+	jetPackCats: [],
+	jetPackDogs: [],
+	pellets: [],
+	enemyBullets: [],
+};
+
+class Pellet {
+	constructor(x, y, width, height) {
+		this.x = x + boxSize * 0.7;
+		this.y = y - boxSize * 0.2;
+		this.width = width;
+		this.height = height;
 	}
 
 	draw(ctx) {
 		ctx.fillStyle = "red";
-		ctx.fillRect(
-			this.x + boxSize * 0.7,
-			this.y - boxSize * 0.2,
-			boxSize * 0.1,
-			boxSize * 0.4
-		);
+		ctx.fillRect(this.x, this.y, this.width, this.height);
 	}
 }
 
 class Laser {
-	constructor(x, y) {
+	constructor(x, y, width, height) {
 		this.x = x;
 		this.y = y;
+		this.width = width;
+		this.height = height;
 	}
 
 	update() {}
 
 	draw(ctx) {
-		ctx.drawImage(laserImg, this.x, this.y, laserWidth, laserHeight);
+		ctx.drawImage(laserImg, this.x, this.y, this.width, this.height);
 	}
 }
 
 class Cat {
-	constructor(x, y, rotation, rotationSpeed) {
+	constructor(x, y, width, height, rotation, rotationSpeed) {
 		this.x = x;
 		this.y = y;
+		this.width = width;
+		this.height = height;
 		this.rotation = rotation;
 		this.rotationSpeed = rotationSpeed;
 	}
@@ -137,17 +151,25 @@ class Cat {
 
 	draw(ctx) {
 		ctx.save();
-		ctx.translate(this.x + catWidth / 2, this.y + catHeight / 2);
+		ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
 		ctx.rotate(this.rotation);
-		ctx.drawImage(catImg, -catWidth / 2, -catHeight / 2, catWidth, catHeight);
+		ctx.drawImage(
+			catImg,
+			-this.width / 2,
+			-this.height / 2,
+			this.width,
+			this.height
+		);
 		ctx.restore();
 	}
 }
 
 class Dog {
-	constructor(x, y, rotation, rotationSpeed) {
+	constructor(x, y, width, height, rotation, rotationSpeed) {
 		this.x = x;
 		this.y = y;
+		this.width = width;
+		this.height = height;
 		this.rotation = rotation;
 		this.rotationSpeed = rotationSpeed;
 	}
@@ -159,28 +181,38 @@ class Dog {
 
 	draw(ctx) {
 		ctx.save();
-		ctx.translate(this.x + dogWidth / 2, this.y + dogHeight / 2);
+		ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
 		ctx.rotate(this.rotation);
-		ctx.drawImage(dogImg, -dogWidth / 2, -dogHeight / 2, dogWidth, dogHeight);
+		ctx.drawImage(
+			dogImg,
+			-this.width / 2,
+			-this.height / 2,
+			this.width,
+			this.height
+		);
 		ctx.restore();
 	}
 }
 
 class Piano {
-	constructor(x, y) {
+	constructor(x, y, width, height) {
 		this.x = x;
 		this.y = y;
+		this.width = width;
+		this.height = height;
 	}
 
 	draw(ctx) {
-		ctx.drawImage(pianoImg, this.x, this.y, pianoWidth, pianoHeight);
+		ctx.drawImage(pianoImg, this.x, this.y, this.width, this.height);
 	}
 }
 
 class Bucket {
-	constructor(x, y, timeLeft, isCoin) {
+	constructor(x, y, width, height, timeLeft, isCoin) {
 		this.x = x;
 		this.y = y;
+		this.width = width;
+		this.height = height;
 		this.timeLeft = timeLeft;
 		this.isCoin = isCoin;
 	}
@@ -197,22 +229,24 @@ class Bucket {
 
 		if (this.isCoin) {
 			if (blinking) {
-				ctx.drawImage(coinImg, this.x, this.y, bucketSize, bucketSize);
+				ctx.drawImage(coinImg, this.x, this.y, this.width, this.height);
 			}
 		} else {
 			if (blinking) {
-				ctx.drawImage(coinImg, this.x, this.y, bucketSize, bucketSize);
+				ctx.drawImage(coinImg, this.x, this.y, this.width, this.height);
 			} else {
-				ctx.drawImage(bucketImg, this.x, this.y, bucketSize, bucketSize);
+				ctx.drawImage(bucketImg, this.x, this.y, this.width, this.height);
 			}
 		}
 	}
 }
 
 class JetPackCat {
-	constructor(x, y, targetY, isHovering, hoverDir) {
+	constructor(x, y, width, height, targetY, isHovering, hoverDir) {
 		this.x = x;
 		this.y = y;
+		this.width = width;
+		this.height = height;
 		this.targetY = targetY;
 		this.isHovering = isHovering;
 		this.hoverDir = hoverDir;
@@ -221,11 +255,14 @@ class JetPackCat {
 	}
 
 	shoot() {
-		this.bullets.push({
-			x: this.x + dogWidth / 2,
-			y: this.y + dogHeight,
+		const bullet = {
+			x: this.x + this.width / 2,
+			y: this.y + this.height,
+			width: 5,
+			height: 10,
 			speed: 2,
-		});
+		};
+		entities.enemyBullets.push(bullet);
 	}
 
 	update() {
@@ -258,19 +295,22 @@ class JetPackCat {
 	}
 
 	draw(ctx) {
-		ctx.drawImage(jetPackCatImg, this.x, this.y, dogWidth, dogHeight);
+		ctx.drawImage(jetPackCatImg, this.x, this.y, this.width, this.height);
 		if (!this.isHovering) return;
-		this.bullets.forEach((b) => {
+		for (const bullet of entities.enemyBullets) {
+			bullet.y += bullet.speed;
 			ctx.fillStyle = "red";
-			ctx.fillRect(b.x, b.y, 5, 10);
-		});
+			ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+		}
 	}
 }
 
 class JetPackDog {
-	constructor(x, y, targetY, isHovering, hoverDir) {
+	constructor(x, y, width, height, targetY, isHovering, hoverDir) {
 		this.x = x;
 		this.y = y;
+		this.width = width;
+		this.height = height;
 		this.targetY = targetY;
 		this.isHovering = isHovering;
 		this.hoverDir = hoverDir;
@@ -279,11 +319,14 @@ class JetPackDog {
 	}
 
 	shoot() {
-		this.bullets.push({
-			x: this.x + dogWidth / 2,
-			y: this.y - dogHeight,
+		const bullet = {
+			x: this.x + this.width / 2,
+			y: this.y + this.height,
+			width: 5,
+			height: 10,
 			speed: 2,
-		});
+		};
+		entities.enemyBullets.push(bullet);
 	}
 
 	update() {
@@ -315,68 +358,27 @@ class JetPackDog {
 	}
 
 	draw(ctx) {
-		ctx.drawImage(jetPackDogImg, this.x, this.y, dogWidth, dogHeight);
+		ctx.drawImage(jetPackDogImg, this.x, this.y, this.width, this.height);
 		if (!this.isHovering) return;
-		this.bullets.forEach((b) => {
+		for (const bullet of entities.enemyBullets) {
+			bullet.y -= bullet.speed;
 			ctx.fillStyle = "red";
-			ctx.fillRect(b.x, b.y, 5, 10);
-		});
+			ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+		}
 	}
 }
 
 function shootBullets() {
-	for (const cat of jetPackCats) {
+	for (const cat of entities.jetPackCats) {
 		if (frameCount % 500 === 0 && cat.isHovering) {
 			cat.shoot();
 		}
 	}
-	for (const dog of jetPackDogs) {
+	for (const dog of entities.jetPackDogs) {
 		if (frameCount % 300 === 0 && dog.isHovering) {
 			dog.shoot();
 		}
 	}
-}
-
-function catBulletCollision() {
-	for (let i = 0; i < jetPackCats.length; i++) {
-		const bullets = jetPackCats[i].bullets;
-		for (let j = 0; j < bullets.length; j++) {
-			if (
-				playerX < bullets[j].x + dogWidth &&
-				playerX + boxSize > bullets[j].x &&
-				playerY < bullets[j].y + dogHeight &&
-				playerY + boxSize > bullets[j].y
-			) {
-				const hitAudio = new Audio("woosh.wav");
-				hitAudio.play();
-				bullets.splice(j, 1);
-				hideHeart();
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-function dogBulletCollision() {
-	for (let i = 0; i < jetPackDogs.length; i++) {
-		const bullets = jetPackDogs[i].bullets;
-		for (let j = 0; j < bullets.length; j++) {
-			if (
-				playerX < bullets[j].x + dogWidth &&
-				playerX + boxSize > bullets[j].x &&
-				playerY < bullets[j].y + dogHeight &&
-				playerY + boxSize > bullets[j].y
-			) {
-				const hitAudio = new Audio("woosh.wav");
-				hitAudio.play();
-				bullets.splice(j, 1);
-				hideHeart();
-				return true;
-			}
-		}
-	}
-	return false;
 }
 
 document.addEventListener("keydown", (e) => {
@@ -406,19 +408,19 @@ document.addEventListener("keyup", (e) => {
 function gameLoop() {
 	if (isPaused) return;
 	frameCount++;
-	updateEnemies();
+	updateBuckets();
 	//Filter arrays for screen bounds
-	buckets = buckets.filter((b) => b.timeLeft > 0);
-	cats = cats.filter((c) => c.y <= ctx.canvas.height);
-	dogs = dogs.filter((d) => d.y <= ctx.canvas.height);
-	pianos = pianos.filter((p) => p.y <= ctx.canvas.height);
-	lasers = lasers.filter((l) => l.y <= ctx.canvas.height);
-	pellets = pellets.filter((p) => p.y >= 0);
+	entities.buckets = entities.buckets.filter((b) => b.timeLeft > 0);
+	entities.cats = entities.cats.filter((c) => c.y <= ctx.canvas.height);
+	entities.dogs = entities.dogs.filter((d) => d.y <= ctx.canvas.height);
+	entities.pianos = entities.pianos.filter((p) => p.y <= ctx.canvas.height);
+	entities.lasers = entities.lasers.filter((l) => l.y <= ctx.canvas.height);
+	entities.pellets = entities.pellets.filter((p) => p.y >= 0);
 
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	drawBackground();
-	if (frameCount) if (frameCount % 120 === 0) spawnEnemies();
-	drawEnemies();
+	if (frameCount) if (frameCount % 120 === 0) spawnBuckets();
+	drawBuckets();
 	if (frameCount % 200 === 0 && (level >= 5) & !lasersDisabled) spawnLasers();
 	if (!lasersDisabled) drawLasers();
 	if (frameCount % 450 === 0) spawnCats();
@@ -438,23 +440,12 @@ function gameLoop() {
 	if (keys.s) moveDown();
 	if (keys.a) moveLeft();
 	if (keys.d) moveRight();
-	for (let i = 0; i < buckets.length; i++) {
-		if (buckets[i].timeLeft === 0) buckets.shift();
+	for (let i = 0; i < entities.buckets.length; i++) {
+		if (entities.buckets[i].timeLeft === 0) entities.buckets.shift();
 	}
 	drawPlayer();
 	drawPellets();
-	catTurretCollision();
-	
-	catBulletCollision();
-	jetPackCatTurretCollision();
-	pianoTurretCollision();
-	laserTurretCollision();
-	bucketCollision();
-	if (!lasersDisabled) laserCollision();
-	dogTurretCollision();
-	jetPackDogTurretCollision();
-	dogBulletCollision();
-	pianoCollision();
+	handleCollisions();
 	checkScore();
 	checkHealth();
 	updateCoins();
@@ -467,8 +458,8 @@ function initCanvas() {
 	ctx.canvas.height = (3 * window.innerWidth) / 5;
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	boxSize = window.innerWidth / 20;
-	playerX = ctx.canvas.width / 2 - boxSize / 2;
-	playerY = ctx.canvas.height / 2 - boxSize / 2;
+	entities.players[0].x = ctx.canvas.width / 2 - boxSize / 2;
+	entities.players[0].y = ctx.canvas.height / 2 - boxSize / 2;
 }
 
 function drawBackground() {
@@ -476,40 +467,51 @@ function drawBackground() {
 }
 
 function drawPlayer() {
-	ctx.drawImage(cloudImg, playerX, playerY, playerWidth, playerHeight);
+	const p = entities.players[0];
+	ctx.drawImage(cloudImg, p.x, p.y, p.width, p.height);
 }
 
 function drawPlayerAlt() {
-	ctx.drawImage(cloudAltImg, playerX, playerY, playerWidth, playerHeight);
+	const p = entities.players[0];
+	ctx.drawImage(cloudAltImg, p.x, p.y, p.width, p.height);
 }
 
 function spawnPellet() {
-	pellets.push(new Pellet(playerX, playerY));
+	entities.pellets.push(
+		new Pellet(
+			entities.players[0].x,
+			entities.players[0].y,
+			boxSize * 0.1,
+			boxSize * 0.4
+		)
+	);
 }
 
 function drawPellets() {
-	for (const pellet of pellets) {
+	for (const pellet of entities.pellets) {
 		pellet.draw(ctx);
 		pellet.y -= pelletSpeed;
 	}
 }
 
-function spawnEnemies() {
+function spawnBuckets() {
 	const padding = bucketSize;
 	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
 	const randomY = Math.random() * (ctx.canvas.height - padding * 2) + padding;
 
-	buckets.push(new Bucket(randomX, randomY, 800));
+	entities.buckets.push(
+		new Bucket(randomX, randomY, bucketSize, bucketSize, 800)
+	);
 }
 
-function updateEnemies() {
-	for (const bucket of buckets) {
+function updateBuckets() {
+	for (const bucket of entities.buckets) {
 		bucket.update();
 	}
 }
 
-function drawEnemies() {
-	for (const bucket of buckets) {
+function drawBuckets() {
+	for (const bucket of entities.buckets) {
 		bucket.draw(ctx);
 	}
 }
@@ -517,13 +519,13 @@ function drawEnemies() {
 function spawnLasers() {
 	const padding = laserWidth;
 	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
-	lasers.push(new Laser(randomX, 0));
+	entities.lasers.push(new Laser(randomX, 0, laserWidth, laserHeight));
 	const laserAudio = new Audio("laser.wav");
 	laserAudio.play();
 }
 
 function drawLasers() {
-	for (const laser of lasers) {
+	for (const laser of entities.lasers) {
 		laser.draw(ctx);
 		laser.y += laserSpeed;
 	}
@@ -533,19 +535,21 @@ function spawnCats() {
 	const padding = catWidth;
 	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
 	let rotationSpeed = Math.random() < 0.5 ? 0.05 : -0.05;
-	cats.push(new Cat(randomX, 0, 0, rotationSpeed));
+	entities.cats.push(
+		new Cat(randomX, 0, catWidth, catHeight, 0, rotationSpeed)
+	);
 	const catAudio = new Audio("meow.wav");
 	catAudio.play();
 }
 
 function updateCats() {
-	for (const cat of cats) {
+	for (const cat of entities.cats) {
 		cat.update();
 	}
 }
 
 function drawCats() {
-	for (const cat of cats) {
+	for (const cat of entities.cats) {
 		cat.draw(ctx);
 	}
 }
@@ -554,13 +558,15 @@ function spawnJetPackCats() {
 	const padding = catWidth;
 	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
 	const targetY = (Math.random() * ctx.canvas.height) / 2;
-	jetPackCats.push(new JetPackCat(randomX, 0, targetY, false, 1));
+	entities.jetPackCats.push(
+		new JetPackCat(randomX, 0, dogWidth, dogHeight, targetY, false, 1)
+	);
 	const catAudio = new Audio("meow.wav");
 	catAudio.play();
 }
 
 function drawJetPackCats() {
-	for (const cat of jetPackCats) {
+	for (const cat of entities.jetPackCats) {
 		cat.update();
 		cat.draw(ctx);
 	}
@@ -570,19 +576,21 @@ function spawnDogs() {
 	const padding = dogWidth;
 	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
 	let rotationSpeed = Math.random() < 0.5 ? 0.01 : -0.01;
-	dogs.push(new Dog(randomX, 0, 0, rotationSpeed));
+	entities.dogs.push(
+		new Dog(randomX, 0, dogWidth, dogHeight, 0, rotationSpeed)
+	);
 	const dogAudio = new Audio("bark.mp3");
 	dogAudio.play();
 }
 
 function updateDogs() {
-	for (const dog of dogs) {
+	for (const dog of entities.dogs) {
 		dog.update();
 	}
 }
 
 function drawDogs() {
-	for (const dog of dogs) {
+	for (const dog of entities.dogs) {
 		dog.draw(ctx);
 	}
 }
@@ -594,15 +602,23 @@ function spawnJetPackDogs() {
 	const maxY = ctx.canvas.height - dogHeight;
 	const targetY = Math.random() * (maxY - minY) + minY;
 
-	jetPackDogs.push(
-		new JetPackDog(randomX, ctx.canvas.height, targetY, false, 1)
+	entities.jetPackDogs.push(
+		new JetPackDog(
+			randomX,
+			ctx.canvas.height,
+			dogWidth,
+			dogHeight,
+			targetY,
+			false,
+			1
+		)
 	);
 	const dogAudio = new Audio("bark.mp3");
 	dogAudio.play();
 }
 
 function drawJetPackDogs() {
-	for (const dog of jetPackDogs) {
+	for (const dog of entities.jetPackDogs) {
 		dog.update();
 		dog.draw(ctx);
 	}
@@ -611,361 +627,77 @@ function drawJetPackDogs() {
 function spawnPianos() {
 	const padding = pianoWidth;
 	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
-	pianos.push(new Piano(randomX, 0));
+	entities.pianos.push(new Piano(randomX, 0, pianoWidth, pianoHeight));
 	const pianoAudio = new Audio("piano.wav");
 	pianoAudio.play();
 }
 
 function drawPianos() {
-	for (const piano of pianos) {
+	for (const piano of entities.pianos) {
 		piano.draw(ctx);
 		piano.y += pianoSpeed;
 	}
 }
 
 const moveUp = () => {
-	if (playerY <= playerHeight * 0.1) {
-		playerY = 0;
+	const p = entities.players[0];
+	if (p.y <= p.height * 0.1) {
+		p.y = 0;
 		return;
 	}
-	playerY -= playerSpeed;
+	p.y -= p.speed;
 };
 
 const moveDown = () => {
-	if (playerY >= ctx.canvas.height - playerHeight) {
-		playerY = ctx.canvas.height - playerHeight;
+	const p = entities.players[0];
+	if (p.y >= ctx.canvas.height - p.height) {
+		p.y = ctx.canvas.height - p.height;
 		return;
 	}
-	playerY += playerSpeed;
+	p.y += p.speed;
 };
 
 const moveLeft = () => {
-	playerX -= playerSpeed;
-	if (playerX + playerWidth < 0) {
-		playerX = ctx.canvas.width;
+	const p = entities.players[0];
+	p.x -= p.speed;
+	if (p.x + p.width < 0) {
+		p.x = ctx.canvas.width;
 	}
 };
 
 const moveRight = () => {
-	playerX += playerSpeed;
-	if (playerX > ctx.canvas.width) {
-		playerX = -playerWidth;
+	const p = entities.players[0];
+	p.x += p.speed;
+	if (p.x > ctx.canvas.width) {
+		p.x = -p.width;
 	}
 };
-/*
-function bucketCollision() {
-	for (let i = 0; i < buckets.length; i++) {
-		const e = buckets[i];
-		if (
-			playerX < e.x + bucketSize &&
-			playerX + playerWidth > e.x &&
-			playerY < e.y + bucketSize &&
-			playerY + playerHeight > e.y
-		) {
-			if (buckets[i].timeLeft < 300) {
-				new Audio("coin.mp3").play();
-				isBonus = true;
-				coins++;
-				coinDisplay.innerText = `Coins: ${coins}`;
-				buckets.splice(i, 1);
-				playerScore++;
-				scoreDisplay.innerText = `Buckets: ${playerScore}`;
-				return true;
-			} else {
-				new Audio("water.wav").play();
-			}
-
-			buckets.splice(i, 1);
-			playerScore++;
-			scoreDisplay.innerText = `Buckets: ${playerScore}`;
-			return true;
-		}
-	}
-	return false;
-}
-
-function catCollision() {
-	for (let i = 0; i < cats.length; i++) {
-		const l = cats[i];
-		if (
-			playerX < l.x + catWidth &&
-			playerX + boxSize > l.x &&
-			playerY < l.y + catHeight &&
-			playerY + boxSize > l.y
-		) {
-			if (itemCounts.bowl > 0) {
-				hidePowerUp("bowl");
-				itemCounts.bowl--;
-				cats.splice(i, 1);
-				return true;
-			}
-			const hitAudio = new Audio("woosh.wav");
-			hitAudio.play();
-			hideHeart();
-			cats.splice(i, 1);
-			return true;
-		}
-	}
-	return false;
-}
-
-function jetPackCatCollision() {
-	for (let i = 0; i < jetPackCats.length; i++) {
-		const l = jetPackCats[i];
-		if (
-			playerX < l.x + dogWidth &&
-			playerX + boxSize > l.x &&
-			playerY < l.y + dogHeight &&
-			playerY + boxSize > l.y
-		) {
-			const hitAudio = new Audio("woosh.wav");
-			hitAudio.play();
-			hideHeart();
-			jetPackCats.splice(i, 1);
-			return true;
-		}
-	}
-	return false;
-}
-*/
-function jetPackCatTurretCollision() {
-	for (let i = 0; i < jetPackCats.length; i++) {
-		const l = jetPackCats[i];
-		for (let j = 0; j < pellets.length; j++) {
-			if (
-				pellets[j].x < l.x + dogWidth &&
-				pellets[j].x + boxSize > l.x &&
-				pellets[j].y < l.y + dogHeight &&
-				pellets[j].y + boxSize > l.y
-			) {
-				const coinHitAudio = new Audio("coin.mp3");
-				coinHitAudio.play();
-				buckets.push(new Bucket(l.x, l.y, 300, true));
-				jetPackCats.splice(i, 1);
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-function catTurretCollision() {
-	for (let i = 0; i < cats.length; i++) {
-		const l = cats[i];
-		for (let j = 0; j < pellets.length; j++) {
-			if (
-				pellets[j].x < l.x + catWidth &&
-				pellets[j].x + boxSize > l.x &&
-				pellets[j].y < l.y + catHeight &&
-				pellets[j].y + boxSize > l.y
-			) {
-				const coinHitAudio = new Audio("coin.mp3");
-				coinHitAudio.play();
-				buckets.push(new Bucket(l.x, l.y, 300, true));
-				cats.splice(i, 1);
-				return true;
-			}
-		}
-	}
-	return false;
-}
-/*
-function dogCollision() {
-	for (let i = 0; i < dogs.length; i++) {
-		const l = dogs[i];
-		if (
-			playerX < l.x + dogWidth &&
-			playerX + boxSize > l.x &&
-			playerY < l.y + dogHeight &&
-			playerY + boxSize > l.y
-		) {
-			if (itemCounts.bone) {
-				hidePowerUp("bone");
-				itemCounts.bone--;
-				dogs.splice(i, 1);
-				return true;
-			}
-			const hitAudio = new Audio("woosh.wav");
-			hitAudio.play();
-			hideHeart();
-			dogs.splice(i, 1);
-			return true;
-		}
-	}
-	return false;
-}
-
-function jetPackDogCollision() {
-	for (let i = 0; i < jetPackDogs.length; i++) {
-		const l = jetPackDogs[i];
-		if (
-			playerX < l.x + dogWidth &&
-			playerX + boxSize > l.x &&
-			playerY < l.y + dogHeight &&
-			playerY + boxSize > l.y
-		) {
-			const hitAudio = new Audio("woosh.wav");
-			hitAudio.play();
-			hideHeart();
-			jetPackDogs.splice(i, 1);
-			return true;
-		}
-	}
-	return false;
-}
-*/
-function jetPackDogTurretCollision() {
-	for (let i = 0; i < jetPackDogs.length; i++) {
-		const l = jetPackDogs[i];
-		for (let j = 0; j < pellets.length; j++) {
-			if (
-				pellets[j].x < l.x + dogWidth &&
-				pellets[j].x + boxSize > l.x &&
-				pellets[j].y < l.y + dogHeight &&
-				pellets[j].y + boxSize > l.y
-			) {
-				const coinHitAudio = new Audio("coin.mp3");
-				coinHitAudio.play();
-				buckets.push(new Bucket(l.x, l.y, 300, true));
-				jetPackDogs.splice(i, 1);
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-function dogTurretCollision() {
-	for (let i = 0; i < dogs.length; i++) {
-		const l = dogs[i];
-		for (let j = 0; j < pellets.length; j++) {
-			if (
-				pellets[j].x < l.x + dogWidth &&
-				pellets[j].x + boxSize > l.x &&
-				pellets[j].y < l.y + dogHeight &&
-				pellets[j].y + boxSize > l.y
-			) {
-				const coinHitAudio = new Audio("coin.mp3");
-				coinHitAudio.play();
-				buckets.push(new Bucket(l.x, l.y, 300, true));
-				dogs.splice(i, 1);
-				return true;
-			}
-		}
-	}
-	return false;
-}
-/*
-function pianoCollision() {
-	for (let i = 0; i < pianos.length; i++) {
-		const l = pianos[i];
-		if (
-			playerX < l.x + pianoWidth &&
-			playerX + boxSize > l.x &&
-			playerY < l.y + pianoHeight &&
-			playerY + boxSize > l.y
-		) {
-			if (itemCounts.beethoven) {
-				hidePowerUp("beethoven");
-				itemCounts.beethoven--;
-				pianos.splice(i, 1);
-				return true;
-			}
-			const hitAudio = new Audio("woosh.wav");
-			hitAudio.play();
-			hideHeart();
-			pianos.splice(i, 1);
-			return true;
-		}
-	}
-	return false;
-}
-*/
-function pianoTurretCollision() {
-	for (let i = 0; i < pianos.length; i++) {
-		const l = pianos[i];
-		for (let j = 0; j < pellets.length; j++) {
-			if (
-				pellets[j].x < l.x + pianoWidth &&
-				pellets[j].x + boxSize > l.x &&
-				pellets[j].y < l.y + pianoHeight &&
-				pellets[j].y + boxSize > l.y
-			) {
-				const coinHitAudio = new Audio("coin.mp3");
-				coinHitAudio.play();
-				buckets.push(new Bucket(l.x, l.y, 300, true));
-				pianos.splice(i, 1);
-				return true;
-			}
-		}
-	}
-	return false;
-}
-/*
-function laserCollision() {
-	for (let i = 0; i < lasers.length; i++) {
-		const l = lasers[i];
-		if (
-			playerX < l.x + laserWidth &&
-			playerX + boxSize > l.x &&
-			playerY < l.y + laserHeight &&
-			playerY + boxSize > l.y
-		) {
-			const hitAudio = new Audio("woosh.wav");
-			hitAudio.play();
-			hideHeart();
-			lasers.splice(i, 1);
-			return true;
-		}
-	}
-	return false;
-}
-	*/
-
-function laserTurretCollision() {
-	for (let i = 0; i < lasers.length; i++) {
-		const l = lasers[i];
-		for (let j = 0; j < pellets.length; j++) {
-			if (
-				pellets[j].x < l.x + laserWidth &&
-				pellets[j].x + boxSize > l.x &&
-				pellets[j].y < l.y + laserHeight &&
-				pellets[j].y + boxSize > l.y
-			) {
-				const coinHitAudio = new Audio("coin.mp3");
-				coinHitAudio.play();
-				buckets.push(new Bucket(l.x, l.y, 300, true));
-				lasers.splice(i, 1);
-				return true;
-			}
-		}
-	}
-	return false;
-}
 
 function hideHeart() {
-	if (playerHealth > 0) {
-		playerHealth--;
+	const p = entities.players[0];
+	if (p.health > 0) {
+		p.health--;
 	}
 
-	if (healthBar[playerHealth]) {
-		healthBar[playerHealth].style.display = "none";
+	if (healthBar[p.health]) {
+		healthBar[p.health].style.display = "none";
 	}
 }
 
 function checkScore() {
-	if (playerScore >= 3) {
+	if (playerScore >= 10) {
 		playerScore = 0;
 		level++;
 		initCanvas();
 		frameCount = 0;
-		buckets = [];
-		cats = [];
-		dogs = [];
-		pianos = [];
-		lasers = [];
-		jetPackCats = [];
-		jetPackDogs = [];
+		entities.pellets = [];
+		entities.buckets = [];
+		entities.cats = [];
+		entities.dogs = [];
+		entities.pianos = [];
+		entities.lasers = [];
+		entities.jetPackCats = [];
+		entities.jetPackDogs = [];
 		laserSpeed += boxSize * 0.005;
 		catSpeed += boxSize * 0.005;
 		dogSpeed += boxSize * 0.005;
@@ -977,7 +709,7 @@ function checkScore() {
 }
 
 function checkHealth() {
-	if (playerHealth <= 0) gameOver();
+	if (entities.players[0].health <= 0) gameOver();
 }
 
 function updateCoins() {
@@ -989,7 +721,7 @@ function gameOver() {
 	backgroundMusic.currentTime = 0;
 	initCanvas();
 	frameCount = 0;
-	playerHealth = 3;
+	entities.players[0].health = 3;
 	coins = 0;
 	coinDisplay.innerText = `Coins: ${coins}`;
 	level = 1;
@@ -999,16 +731,17 @@ function gameOver() {
 	hideAllPowerUps();
 	startGameBtn.style.display = "block";
 	startGameBtn.innerText = "PLAY AGAIN";
-	buckets = [];
-	cats = [];
-	dogs = [];
-	pianos = [];
-	lasers = [];
-	jetPackCats = [];
-	jetPackDogs = [];
+	entities.pellets = [];
+	entities.buckets = [];
+	entities.cats = [];
+	entities.dogs = [];
+	entities.pianos = [];
+	entities.lasers = [];
+	entities.jetPackCats = [];
+	entities.jetPackDogs = [];
 	turretEnabled = false;
 	cloudImg.src = "cloud.png";
-	playerHeight = boxSize / 1.1;
+	entities.players[0].height = boxSize / 1.1;
 	window.cancelAnimationFrame();
 }
 
@@ -1017,9 +750,7 @@ startGameBtn.addEventListener("click", () => {
 		levelDisplay.innerText = `Level ${level}`;
 	}
 	backgroundMusic.loop = true;
-	backgroundMusic.play().catch(() => {
-		// Handle play() promise rejection if needed
-	});
+	backgroundMusic.play();
 	startGameBtn.style.display = "none";
 	playerScore = 0;
 	scoreDisplay.innerText = `Buckets: ${playerScore}`;
@@ -1106,7 +837,7 @@ function disableLasers() {
 			lasersDisabled = true;
 			setTimeout(() => {
 				img.src = "defense.png";
-				lasers = [];
+				entities.lasers = [];
 				lasersDisabled = false;
 				hidePowerUp("defense", img);
 			}, 15000);
@@ -1117,7 +848,7 @@ function disableLasers() {
 function enableTurret() {
 	turretEnabled = true;
 	cloudImg.src = "cloudturret.png";
-	playerHeight = boxSize * 1.2;
+	entities.players[0].height = boxSize * 1.2;
 }
 
 shopBtn.addEventListener("click", () => {
