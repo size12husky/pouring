@@ -22,15 +22,22 @@
 					to move
 				</p>
 
-				<p class="controls-p"><span class="keyboard-key">P</span> to open shop</p>
-				<p class="controls-p"><span class="keyboard-key">M</span> to fire turret</p>
+				<p class="controls-p">
+					<span class="keyboard-key">P</span> to open shop
+				</p>
+				<p class="controls-p">
+					<span class="keyboard-key">M</span> to fire turret
+				</p>
 			</div>
 
 			<div class="instructions-section">
 				<h3>Gameplay</h3>
 				<p>- Avoid falling obstacles and collect buckets</p>
 				<p>- 20 buckets gets you to the next level!</p>
-				<p>- Buckets turn to coins before they disappear. Collect coins to buy power-ups in the shop!</p>
+				<p>
+					- Buckets turn to coins before they disappear. Collect coins to buy
+					power-ups in the shop!
+				</p>
 				<p>- Obstacles fall faster each level</p>
 				<p>- Look out for new obstacles as you progress!</p>
 			</div>
@@ -60,12 +67,13 @@
 							disable lasers for 15 seconds.
 						</p>
 					</li>
-					<li display: flex>
+					<li style="display: flex">
 						<h4>Turret</h4>
 						<img id="turret-menu" src="turret.png" />
 						<p>
 							Activate the turret by purchasing it in the shop! Fire the Turret
-							with <span class="keyboard-key">M</span>. Enemies hit with the turret will drop coins!
+							with <span class="keyboard-key">M</span>. Enemies hit with the
+							turret will drop coins!
 						</p>
 					</li>
 				</ul>
@@ -229,8 +237,11 @@
 		<img id="jet-pack-cat-img" src="jetpackcat.png" class="game-img" />
 		<img id="jet-pack-dog-img" src="jetpackdog.png" class="game-img" />
 		<img id="background-img" src="background.png" class="game-img" />
-		<script src="instructions.js"></script>
-		<script src="collision.js"></script>
+		<script src="classes.js"></script>
 		<script src="script.js"></script>
+		<script src="instructions.js"></script>
+		<script src="shophandler.js"></script>
+		<script src="powerupshandler.js"></script>
+		<script src="collision.js"></script>
 	</body>
 </html>

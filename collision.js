@@ -6,7 +6,7 @@ const collisionPairs = [
 	["players", "lasers"],
 	["players", "jetPackCats"],
 	["players", "jetPackDogs"],
-    ["players", "enemyBullets"],
+	["players", "enemyBullets"],
 	["pellets", "cats"],
 	["pellets", "dogs"],
 	["pellets", "pianos"],
@@ -54,20 +54,22 @@ function onHit(a, b, nameA, nameB) {
 	if (nameA !== "players" && nameB === "buckets") {
 		return;
 	} else if (nameA === "players" && nameB === "buckets") {
+		if (b.timeLeft < 300) {
+			coins++;
+			coinDisplay.innerText = `Coins: ${coins}`;
+			new Audio("coin.mp3").play();
+			return;
+		}
 		playerScore++;
 		scoreDisplay.innerText = `Buckets: ${playerScore}`;
 		new Audio("water.wav").play();
 		return;
-	}
-	if (b.timeLeft < 300) {
-		coins++;
-		coinDisplay.innerText = `Coins: ${coins}`;
-		new Audio("coin.mp3").play();
-		return;
 	} else if (nameA === "pellets") {
 		new Audio("coin.mp3").play();
-        console.log(b.x, b.y, b.width, b.height);
-        entities.buckets.push(new Bucket(b.x, b.y, bucketSize, bucketSize, 300, true));
+		console.log(b.x, b.y, b.width, b.height);
+		entities.buckets.push(
+			new Bucket(b.x, b.y, bucketSize, bucketSize, 300, true)
+		);
 	} else {
 		new Audio("woosh.wav").play();
 		hideHeart();

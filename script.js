@@ -21,7 +21,8 @@ let rotationSpeed = 2;
 let frameCount = 0;
 let playerScore = 0;
 let playerHealth = 3;
-let coins = 1000;
+let coins = 0;
+let gameLoopId;
 
 //Power Ups
 let itemCounts = {
@@ -32,7 +33,7 @@ let itemCounts = {
 	turrets: 0,
 };
 
-let level = 7;
+let level = 1;
 
 let isPaused = false;
 let isShopOpen = false;
@@ -79,17 +80,6 @@ const shopItems = {
 	turret: 50,
 };
 
-class Player {
-	constructor(x, y, width, height, speed, health) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		this.speed = speed;
-		this.health = health;
-	}
-}
-
 let entities = {
 	players: [
 		new Player(0, 0, boxSize * 1.5, boxSize / 1.1, playerSpeed, playerHealth),
@@ -104,269 +94,6 @@ let entities = {
 	pellets: [],
 	enemyBullets: [],
 };
-
-class Pellet {
-	constructor(x, y, width, height) {
-		this.x = x + boxSize * 0.7;
-		this.y = y - boxSize * 0.2;
-		this.width = width;
-		this.height = height;
-	}
-
-	draw(ctx) {
-		ctx.fillStyle = "red";
-		ctx.fillRect(this.x, this.y, this.width, this.height);
-	}
-}
-
-class Laser {
-	constructor(x, y, width, height) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-	}
-
-	update() {}
-
-	draw(ctx) {
-		ctx.drawImage(laserImg, this.x, this.y, this.width, this.height);
-	}
-}
-
-class Cat {
-	constructor(x, y, width, height, rotation, rotationSpeed) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		this.rotation = rotation;
-		this.rotationSpeed = rotationSpeed;
-	}
-
-	update() {
-		this.rotation += this.rotationSpeed;
-		this.y += catSpeed;
-	}
-
-	draw(ctx) {
-		ctx.save();
-		ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
-		ctx.rotate(this.rotation);
-		ctx.drawImage(
-			catImg,
-			-this.width / 2,
-			-this.height / 2,
-			this.width,
-			this.height
-		);
-		ctx.restore();
-	}
-}
-
-class Dog {
-	constructor(x, y, width, height, rotation, rotationSpeed) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		this.rotation = rotation;
-		this.rotationSpeed = rotationSpeed;
-	}
-
-	update() {
-		this.rotation += this.rotationSpeed;
-		this.y += dogSpeed;
-	}
-
-	draw(ctx) {
-		ctx.save();
-		ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
-		ctx.rotate(this.rotation);
-		ctx.drawImage(
-			dogImg,
-			-this.width / 2,
-			-this.height / 2,
-			this.width,
-			this.height
-		);
-		ctx.restore();
-	}
-}
-
-class Piano {
-	constructor(x, y, width, height) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-	}
-
-	draw(ctx) {
-		ctx.drawImage(pianoImg, this.x, this.y, this.width, this.height);
-	}
-}
-
-class Bucket {
-	constructor(x, y, width, height, timeLeft, isCoin) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		this.timeLeft = timeLeft;
-		this.isCoin = isCoin;
-	}
-
-	update() {
-		this.timeLeft--;
-	}
-
-	draw(ctx) {
-		const blinking =
-			(this.timeLeft < 300 && this.timeLeft > 250) ||
-			(this.timeLeft < 200 && this.timeLeft > 150) ||
-			(this.timeLeft < 100 && this.timeLeft > 50);
-
-		if (this.isCoin) {
-			if (blinking) {
-				ctx.drawImage(coinImg, this.x, this.y, this.width, this.height);
-			}
-		} else {
-			if (blinking) {
-				ctx.drawImage(coinImg, this.x, this.y, this.width, this.height);
-			} else {
-				ctx.drawImage(bucketImg, this.x, this.y, this.width, this.height);
-			}
-		}
-	}
-}
-
-class JetPackCat {
-	constructor(x, y, width, height, targetY, isHovering, hoverDir) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		this.targetY = targetY;
-		this.isHovering = isHovering;
-		this.hoverDir = hoverDir;
-
-		this.bullets = [];
-	}
-
-	shoot() {
-		const bullet = {
-			x: this.x + this.width / 2,
-			y: this.y + this.height,
-			width: 5,
-			height: 10,
-			speed: 2,
-		};
-		entities.enemyBullets.push(bullet);
-	}
-
-	update() {
-		const topHoverY = this.targetY - ctx.canvas.height / 40;
-		const bottomHoverY = this.targetY + ctx.canvas.height / 40;
-
-		if (!this.isHovering) {
-			if (this.y < this.targetY) {
-				this.y += catSpeed / 2;
-				if (this.y >= this.targetY) {
-					this.y = this.targetY;
-					this.isHovering = true;
-					this.hoverDir = 1;
-				}
-			}
-		} else {
-			this.bullets.forEach((b) => (b.y += b.speed));
-			this.bullets = this.bullets.filter((b) => b.y <= ctx.canvas.height);
-			this.y += (catSpeed / 3) * this.hoverDir;
-
-			if (this.y >= bottomHoverY) {
-				this.y = bottomHoverY;
-				this.hoverDir = -1;
-			}
-			if (this.y <= topHoverY) {
-				this.y = topHoverY;
-				this.hoverDir = 1;
-			}
-		}
-	}
-
-	draw(ctx) {
-		ctx.drawImage(jetPackCatImg, this.x, this.y, this.width, this.height);
-		if (!this.isHovering) return;
-		for (const bullet of entities.enemyBullets) {
-			bullet.y += bullet.speed;
-			ctx.fillStyle = "red";
-			ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-		}
-	}
-}
-
-class JetPackDog {
-	constructor(x, y, width, height, targetY, isHovering, hoverDir) {
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-		this.targetY = targetY;
-		this.isHovering = isHovering;
-		this.hoverDir = hoverDir;
-
-		this.bullets = [];
-	}
-
-	shoot() {
-		const bullet = {
-			x: this.x + this.width / 2,
-			y: this.y + this.height,
-			width: 5,
-			height: 10,
-			speed: 2,
-		};
-		entities.enemyBullets.push(bullet);
-	}
-
-	update() {
-		const topHoverY = this.targetY - ctx.canvas.height / 40;
-		const bottomHoverY = this.targetY + ctx.canvas.height / 40;
-
-		if (!this.isHovering) {
-			if (this.y > this.targetY) {
-				this.y -= dogSpeed / 2;
-				if (this.y <= this.targetY) {
-					this.y = this.targetY;
-					this.isHovering = true;
-					this.hoverDir = 1; // start by hovering down
-				}
-			}
-		} else {
-			this.bullets.forEach((b) => (b.y -= b.speed));
-			this.y += (dogSpeed / 3) * this.hoverDir;
-
-			if (this.y >= bottomHoverY) {
-				this.y = bottomHoverY;
-				this.hoverDir = -1;
-			}
-			if (this.y <= topHoverY) {
-				this.y = topHoverY;
-				this.hoverDir = 1;
-			}
-		}
-	}
-
-	draw(ctx) {
-		ctx.drawImage(jetPackDogImg, this.x, this.y, this.width, this.height);
-		if (!this.isHovering) return;
-		for (const bullet of entities.enemyBullets) {
-			bullet.y -= bullet.speed;
-			ctx.fillStyle = "red";
-			ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-		}
-	}
-}
 
 function shootBullets() {
 	for (const cat of entities.jetPackCats) {
@@ -408,7 +135,6 @@ document.addEventListener("keyup", (e) => {
 function gameLoop() {
 	if (isPaused) return;
 	frameCount++;
-	updateBuckets();
 	//Filter arrays for screen bounds
 	entities.buckets = entities.buckets.filter((b) => b.timeLeft > 0);
 	entities.cats = entities.cats.filter((c) => c.y <= ctx.canvas.height);
@@ -424,13 +150,11 @@ function gameLoop() {
 	if (frameCount % 200 === 0 && (level >= 5) & !lasersDisabled) spawnLasers();
 	if (!lasersDisabled) drawLasers();
 	if (frameCount % 450 === 0) spawnCats();
-	updateCats();
 	drawCats();
 	if (frameCount % 1000 === 0 && level >= 7) spawnJetPackCats();
 	drawJetPackCats();
 	shootBullets();
 	if (frameCount % 700 === 0) spawnDogs();
-	updateDogs();
 	drawDogs();
 	if (frameCount % 1900 === 0 && level >= 9) spawnJetPackDogs();
 	drawJetPackDogs();
@@ -450,16 +174,39 @@ function gameLoop() {
 	checkHealth();
 	updateCoins();
 	disableLasers();
-	window.requestAnimationFrame(gameLoop);
+	gameLoopId = window.requestAnimationFrame(gameLoop);
 }
 
-function initCanvas() {
+function initCanvas(resizeOnly = false) {
 	ctx.canvas.width = window.innerWidth / 1.5;
 	ctx.canvas.height = (3 * window.innerWidth) / 5;
-	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	boxSize = window.innerWidth / 20;
-	entities.players[0].x = ctx.canvas.width / 2 - boxSize / 2;
-	entities.players[0].y = ctx.canvas.height / 2 - boxSize / 2;
+
+	// recalculate all size-based vars
+	bucketSize = boxSize * 0.7;
+	laserWidth = boxSize / 3;
+	laserHeight = boxSize * 2;
+	catWidth = boxSize;
+	catHeight = boxSize * 0.8;
+	dogWidth = catWidth;
+	dogHeight = catHeight * 1.1;
+	pianoWidth = catWidth;
+	pianoHeight = catHeight;
+	catSpeed = boxSize * 0.02;
+	dogSpeed = boxSize * 0.03;
+	pianoSpeed = boxSize * 0.065;
+	laserSpeed = boxSize * 0.06;
+	pelletSpeed = boxSize * 0.1;
+	playerSpeed = boxSize * 0.06;
+
+	// Update player
+	entities.players[0].width = boxSize * 1.5;
+	entities.players[0].speed = playerSpeed;
+	
+	if (!resizeOnly) {
+		entities.players[0].x = ctx.canvas.width / 2 - entities.players[0].width / 2;
+		entities.players[0].y = ctx.canvas.height / 2 - entities.players[0].height / 2;
+	}
 }
 
 function drawBackground() {
@@ -469,11 +216,6 @@ function drawBackground() {
 function drawPlayer() {
 	const p = entities.players[0];
 	ctx.drawImage(cloudImg, p.x, p.y, p.width, p.height);
-}
-
-function drawPlayerAlt() {
-	const p = entities.players[0];
-	ctx.drawImage(cloudAltImg, p.x, p.y, p.width, p.height);
 }
 
 function spawnPellet() {
@@ -504,14 +246,9 @@ function spawnBuckets() {
 	);
 }
 
-function updateBuckets() {
-	for (const bucket of entities.buckets) {
-		bucket.update();
-	}
-}
-
 function drawBuckets() {
 	for (const bucket of entities.buckets) {
+		bucket.update();
 		bucket.draw(ctx);
 	}
 }
@@ -542,14 +279,9 @@ function spawnCats() {
 	catAudio.play();
 }
 
-function updateCats() {
-	for (const cat of entities.cats) {
-		cat.update();
-	}
-}
-
 function drawCats() {
 	for (const cat of entities.cats) {
+		cat.update();
 		cat.draw(ctx);
 	}
 }
@@ -583,14 +315,9 @@ function spawnDogs() {
 	dogAudio.play();
 }
 
-function updateDogs() {
-	for (const dog of entities.dogs) {
-		dog.update();
-	}
-}
-
 function drawDogs() {
 	for (const dog of entities.dogs) {
+		dog.update();
 		dog.draw(ctx);
 	}
 }
@@ -685,26 +412,42 @@ function hideHeart() {
 }
 
 function checkScore() {
-	if (playerScore >= 10) {
+	if (playerScore >= 20) {
 		playerScore = 0;
+		cloudImg.src = "cloudrain.png";
+		entities.players[0].height = boxSize * 1.2;
 		level++;
-		initCanvas();
-		frameCount = 0;
-		entities.pellets = [];
-		entities.buckets = [];
-		entities.cats = [];
-		entities.dogs = [];
-		entities.pianos = [];
-		entities.lasers = [];
-		entities.jetPackCats = [];
-		entities.jetPackDogs = [];
-		laserSpeed += boxSize * 0.005;
-		catSpeed += boxSize * 0.005;
-		dogSpeed += boxSize * 0.005;
-		pianoSpeed += boxSize * 0.005;
-		startGameBtn.style.display = "block";
-		startGameBtn.innerText = "NEXT LEVEL";
-		window.cancelAnimationFrame();
+		isPaused = true;
+		// Let one frame render with the rain
+
+		cloudImg.onload = () => {
+			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+			drawBackground();
+			drawBuckets();
+			drawPlayer();
+		};
+
+		setTimeout(() => {
+			cancelAnimationFrame(gameLoopId);
+			initCanvas();
+			startGameBtn.style.display = "block";
+			startGameBtn.innerText = "NEXT LEVEL";
+
+			frameCount = 0;
+			entities.pellets = [];
+			entities.buckets = [];
+			entities.cats = [];
+			entities.dogs = [];
+			entities.pianos = [];
+			entities.lasers = [];
+			entities.jetPackCats = [];
+			entities.jetPackDogs = [];
+
+			laserSpeed += boxSize * 0.005;
+			catSpeed += boxSize * 0.005;
+			dogSpeed += boxSize * 0.005;
+			pianoSpeed += boxSize * 0.005;
+		}, 1000); // ← wait 1 second *before* canceling loop
 	}
 }
 
@@ -742,12 +485,20 @@ function gameOver() {
 	turretEnabled = false;
 	cloudImg.src = "cloud.png";
 	entities.players[0].height = boxSize / 1.1;
-	window.cancelAnimationFrame();
+	cancelAnimationFrame(gameLoopId);
 }
 
 startGameBtn.addEventListener("click", () => {
+	isPaused = false;
 	if (startGameBtn.innerText !== "START") {
 		levelDisplay.innerText = `Level ${level}`;
+	}
+	if (turretEnabled) {
+		cloudImg.src = "cloudturret.png";
+		entities.players[0].height = boxSize * 1.2;
+	} else {
+		cloudImg.src = "cloud.png";
+		entities.players[0].height = boxSize / 1.1;
 	}
 	backgroundMusic.loop = true;
 	backgroundMusic.play();
@@ -755,112 +506,8 @@ startGameBtn.addEventListener("click", () => {
 	playerScore = 0;
 	scoreDisplay.innerText = `Buckets: ${playerScore}`;
 	initCanvas();
-	window.requestAnimationFrame(gameLoop);
+	gameLoopId = requestAnimationFrame(gameLoop);
 });
-
-function shopHandler() {
-	if (!isShopOpen) {
-		isPaused = true;
-		isShopOpen = true;
-		shopBtn.innerText = "close";
-		shopPanel.style.display = "flex";
-	} else {
-		window.requestAnimationFrame(gameLoop);
-		isPaused = false;
-		isShopOpen = false;
-		shopBtn.innerText = "shop (p)";
-		shopPanel.style.display = "none";
-	}
-}
-
-function buyItem(item) {
-	if (coins >= shopItems[item]) {
-		if (itemCounts[item] >= 3) {
-			return;
-		}
-		itemCounts[item]++;
-		coins -= shopItems[item];
-		coinDisplay.innerText = `Coins: ${coins}`;
-		coinCounter.innerText = coins;
-		if (item !== "turret") {
-			showPowerUp(item);
-		} else {
-			enableTurret();
-		}
-	} else {
-		shopCoinsDisplay.style.color = "red";
-		setTimeout(() => {
-			shopCoinsDisplay.style.color = "white";
-		}, 1000);
-	}
-}
-
-function showPowerUp(item) {
-	const powerUpImgs = document.querySelectorAll(`.power-up-img.${item}`);
-	for (let i = 0; i < powerUpImgs.length; i++) {
-		if (powerUpImgs[i].style.display === "none") {
-			powerUpImgs[i].style.display = "flex";
-			break;
-		}
-	}
-}
-
-function hidePowerUp(item, imgToHide = null) {
-	const powerUpImgs = document.querySelectorAll(`.power-up-img.${item}`);
-	for (let i = 0; i < powerUpImgs.length; i++) {
-		if (
-			getComputedStyle(powerUpImgs[i]).display !== "none" &&
-			(imgToHide === null || powerUpImgs[i] === imgToHide)
-		) {
-			powerUpImgs[i].style.display = "none";
-			break;
-		}
-	}
-}
-
-function hideAllPowerUps() {
-	const powerUpImgs = document.querySelectorAll(`.power-up-img`);
-	powerUpImgs.forEach((img) => {
-		if (getComputedStyle(img) !== "none") {
-			img.style.display = "none";
-		}
-	});
-}
-
-function disableLasers() {
-	const defenseImgs = document.querySelectorAll(".power-up-img.defense");
-	defenseImgs.forEach((img) => {
-		img.addEventListener("click", () => {
-			if (lasersDisabled) return;
-			itemCounts.defenses--;
-			img.src = "defenseactive.png";
-			lasersDisabled = true;
-			setTimeout(() => {
-				img.src = "defense.png";
-				entities.lasers = [];
-				lasersDisabled = false;
-				hidePowerUp("defense", img);
-			}, 15000);
-		});
-	});
-}
-
-function enableTurret() {
-	turretEnabled = true;
-	cloudImg.src = "cloudturret.png";
-	entities.players[0].height = boxSize * 1.2;
-}
-
-shopBtn.addEventListener("click", () => {
-	shopHandler();
-});
-
-const itemKeys = Object.keys(shopItems);
-for (let i = 0; i < shopBtns.length; i++) {
-	shopBtns[i].addEventListener("click", () => {
-		buyItem(`${itemKeys[i]}`);
-	});
-}
 
 document.addEventListener("keydown", (e) => {
 	if (e.key.toLowerCase() === "p") shopHandler();
@@ -871,6 +518,5 @@ document.addEventListener("keydown", (e) => {
 });
 
 window.addEventListener("resize", () => {
-	initCanvas();
-	boxSize = window.innerWidth / 20;
+	initCanvas(true)
 });
