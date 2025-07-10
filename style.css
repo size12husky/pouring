@@ -3,6 +3,21 @@
     src: url('pico-8.otf');
 }
 
+#joystick-container {
+    display: flex;
+    justify-content: center;
+    position: fixed;
+    width: 150px;
+    height: 150px;
+    bottom: 50px;
+    left: 35%;
+    z-index: 1000;
+    /* Add a background to see the zone */
+    background-color: white;
+    border-radius: 50%;
+}
+
+
 body {
     font-family: "Pico-8";
     background: black;

@@ -164,6 +164,10 @@ function gameLoop() {
 	if (keys.s) moveDown();
 	if (keys.a) moveLeft();
 	if (keys.d) moveRight();
+	if (currentMovement.left) moveLeft();
+    if (currentMovement.right) moveRight();
+    if (currentMovement.up) moveUp();
+    if (currentMovement.down) moveDown();
 	for (let i = 0; i < entities.buckets.length; i++) {
 		if (entities.buckets[i].timeLeft === 0) entities.buckets.shift();
 	}
@@ -519,4 +523,8 @@ document.addEventListener("keydown", (e) => {
 
 window.addEventListener("resize", () => {
 	initCanvas(true)
+});
+
+const joystick = nipplejs.create({
+    restJoystick: false,
 });
