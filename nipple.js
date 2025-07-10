@@ -1,39 +1,46 @@
-import nipplejs from "nipplejs";
+(async () => {
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+    }
+    
+    const nipplejs = await import('https://cdn.skypack.dev/nipplejs');
 
-let currentMovement = {
-	left: false,
-	right: false,
-	up: false,
-	down: false,
-};
+    window.currentMovement = {
+        left: false,
+        right: false,
+        up: false,
+        down: false
+    };
 
-const manager = nipplejs.create({
-	zone: document.getElementById("joystick-container"),
-	mode: "static",
-	position: { left: "50px", bottom: "50px" },
-	color: "blue",
-	size: 120,
-});
+    const container = document.getElementById('joystick-container');
+    if (!container) {
+        console.error('Joystick container not found');
+        return;
+    }
 
-manager.on("move", (evt, data) => {
-	currentMovement = { left: false, right: false, up: false, down: false };
+    const manager = nipplejs.default.create({
+        zone: container,
+        mode: 'dynamic',
+        color: 'blue',
+        size: 120,
+        threshold: 0.1
+    });
 
-	const x = data.direction.x;
-	const y = data.direction.y;
+    manager.on('move', (evt, data) => {
+        console.log('Angle:', data.angle.degree);
+        
+        window.currentMovement = { left: false, right: false, up: false, down: false };
+        
+        const angle = data.angle.degree;
+        
+        if (angle >= 315 || angle <= 45) window.currentMovement.right = true;
+        if (angle >= 45 && angle <= 135) window.currentMovement.up = true;
+        if (angle >= 135 && angle <= 225) window.currentMovement.left = true;
+        if (angle >= 225 && angle <= 315) window.currentMovement.down = true;
+    });
 
-	const threshold = 0.3;
-
-	if (Math.abs(x) > threshold) {
-		if (x > 0) currentMovement.right = true;
-		if (x < 0) currentMovement.left = true;
-	}
-
-	if (Math.abs(y) > threshold) {
-		if (y > 0) currentMovement.up = true;
-		if (y < 0) currentMovement.down = true;
-	}
-});
-
-manager.on("end", () => {
-	currentMovement = { left: false, right: false, up: false, down: false };
-});
+    manager.on('end', () => {
+        window.currentMovement = { left: false, right: false, up: false, down: false };
+    });
+})();
