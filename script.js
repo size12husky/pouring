@@ -202,7 +202,7 @@ function initCanvas(resizeOnly = false) {
     pianoWidth = catWidth;
     pianoHeight = catHeight;
 	const isMobile = window.innerWidth <= 768;
-	const speedMultiplier = isMobile ? 0.5 : 1;
+	const speedMultiplier = isMobile ? 1.2 : 1;
 
 	catSpeed = Math.max(boxSize * 0.02 * speedMultiplier, 0.5);
 	dogSpeed = Math.max(boxSize * 0.03 * speedMultiplier, 0.7);
