@@ -142,7 +142,6 @@ document.addEventListener("keyup", (e) => {
 function gameLoop() {
 	if (isPaused) return;
 	frameCount++;
-	//Filter arrays for screen bounds
 	entities.buckets = entities.buckets.filter((b) => b.timeLeft > 0);
 	entities.cats = entities.cats.filter((c) => c.y <= ctx.canvas.height);
 	entities.dogs = entities.dogs.filter((d) => d.y <= ctx.canvas.height);
@@ -202,19 +201,18 @@ function initCanvas(resizeOnly = false) {
     dogHeight = catHeight * 1.1;
     pianoWidth = catWidth;
     pianoHeight = catHeight;
-    
-    const isMobile = window.innerWidth <= 768;
-    const speedMultiplier = isMobile ? 2.5 : 1;
-    
-    catSpeed = Math.max(boxSize * 0.02 * speedMultiplier, 1.5);
-    dogSpeed = Math.max(boxSize * 0.03 * speedMultiplier, 2);
-    pianoSpeed = Math.max(boxSize * 0.065 * speedMultiplier, 3.5);
-    laserSpeed = Math.max(boxSize * 0.06 * speedMultiplier, 3);
-    pelletSpeed = Math.max(boxSize * 0.1 * speedMultiplier, 5);
-    playerSpeed = Math.max(boxSize * 0.06 * speedMultiplier, 3);
+	const isMobile = window.innerWidth <= 768;
+	const speedMultiplier = isMobile ? 0.5 : 1;
 
-    entities.players[0].width = boxSize * 1.5;
-    entities.players[0].speed = playerSpeed;
+	catSpeed = Math.max(boxSize * 0.02 * speedMultiplier, 0.5);
+	dogSpeed = Math.max(boxSize * 0.03 * speedMultiplier, 0.7);
+	pianoSpeed = Math.max(boxSize * 0.065 * speedMultiplier, 2.5);
+	laserSpeed = Math.max(boxSize * 0.06 * speedMultiplier, 2);
+	pelletSpeed = Math.max(boxSize * 0.1 * speedMultiplier, 4);
+	playerSpeed = Math.max(boxSize * 0.06 * speedMultiplier, 1);
+
+	entities.players[0].width = boxSize * 1.5;
+	entities.players[0].speed = playerSpeed;
     
     if (!resizeOnly) {
         entities.players[0].x = ctx.canvas.width / 2 - entities.players[0].width / 2;

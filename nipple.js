@@ -1,46 +1,35 @@
-(async () => {
-    // Wait for DOM to be ready
-    if (document.readyState === 'loading') {
-        await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
-    }
-    
-    const nipplejs = await import('https://cdn.skypack.dev/nipplejs');
+window.currentMovement = {
+            left: false,
+            right: false,
+            up: false,
+            down: false
+        };
 
-    window.currentMovement = {
-        left: false,
-        right: false,
-        up: false,
-        down: false
-    };
-
-    const container = document.getElementById('joystick-container');
-    if (!container) {
-        console.error('Joystick container not found');
-        return;
-    }
-
-    const manager = nipplejs.default.create({
-        zone: container,
-        mode: 'dynamic',
-        color: 'blue',
-        size: 120,
-        threshold: 0.1
-    });
-
-    manager.on('move', (evt, data) => {
-        console.log('Angle:', data.angle.degree);
+        const container = document.getElementById('joystick-container');
         
-        window.currentMovement = { left: false, right: false, up: false, down: false };
-        
-        const angle = data.angle.degree;
-        
-        if (angle >= 315 || angle <= 45) window.currentMovement.right = true;
-        if (angle >= 45 && angle <= 135) window.currentMovement.up = true;
-        if (angle >= 135 && angle <= 225) window.currentMovement.left = true;
-        if (angle >= 225 && angle <= 315) window.currentMovement.down = true;
-    });
+        const manager = nipplejs.create({
+            zone: container,
+            mode: 'dynamic',
+            color: 'blue',
+            size: 120,
+            threshold: 0.1
+        });
 
-    manager.on('end', () => {
-        window.currentMovement = { left: false, right: false, up: false, down: false };
-    });
-})();
+        manager.on('move', (evt, data) => {
+            console.log('Full data:', data);
+            console.log('Angle:', data.angle?.degree);
+            
+            window.currentMovement = { left: false, right: false, up: false, down: false };
+            
+            const angle = data.angle?.degree;
+            if (typeof angle === 'number') {
+                if (angle >= 315 || angle <= 45) window.currentMovement.right = true;
+                if (angle >= 45 && angle <= 135) window.currentMovement.up = true;
+                if (angle >= 135 && angle <= 225) window.currentMovement.left = true;
+                if (angle >= 225 && angle <= 315) window.currentMovement.down = true;
+            }
+        });
+
+        manager.on('end', () => {
+            window.currentMovement = { left: false, right: false, up: false, down: false };
+        });

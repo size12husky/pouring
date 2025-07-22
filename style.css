@@ -7,7 +7,7 @@
     position: fixed;
     bottom: 50px;
     width: 100%;
-    height: 40%;
+    height: 25%;
     z-index: 9999;
     touch-action: none;
 }
@@ -74,7 +74,6 @@ h1 {
 #defense-active-menu {
     animation: toggleImages 1.6s infinite reverse;
     display: block;
-    /* to start it visible during its active frames */
 }
 
 
@@ -110,7 +109,6 @@ ul li img {
     align-items: center;
     position: relative;
     margin: 0 auto;
-    /* Remove fixed width/height - let canvas determine size */
 }
 
 canvas {
@@ -119,7 +117,6 @@ canvas {
     width: auto;
     height: auto;
     border: 2px solid white;
-    /* Optional: add border to see canvas bounds */
 }
 
 #score-wrapper {
