@@ -1,0 +1,50 @@
+#shop-panel {
+    display: none;
+    background-color: black;
+    flex-direction: column;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border: 4px solid white;
+    padding: 10px;
+    background-color: black;
+}
+
+.shop-item {
+    display: flex;
+    gap: 0px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.shop-item-title {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-right: 80px;
+    width: 100%;
+}
+
+.shop-img {
+    display: flex;
+    width: 30px;
+    height: 30px;
+}
+
+.shop-coin {
+    width: 30px;
+}
+
+#shop-btn {
+    position: absolute;
+    top: 0;
+    left: 10px;
+    cursor: pointer;
+
+}
+
+.buy-btn {
+    font-family: "Pico-8";
+    background: black;
+    color: white;
+}

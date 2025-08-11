@@ -28,12 +28,54 @@ body {
 
 h1 {
     font-size: 3em;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.2em;
+    font-weight: bold;
+    text-shadow: 0 2px 12px rgba(255,255,255,0.09);
+}
+#instructions-container h2 {
+    font-size: 2.1em;
+    font-weight: 600;
+    margin-bottom: 0.8em;
+    letter-spacing: 0.05em;
+    text-align: center;
+    text-shadow: 0 2px 8px rgba(255,255,255,0.10);
+}
+.instructions-section h3 {
+    text-align: center;
+    font-size: 1.3em;
+    font-weight: 500;
+    margin-bottom: 0.5em;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    /* border-left removed */
+    padding-left: 0;
+    text-shadow: 0 1px 8px rgba(255,255,255,0.07);
+}
+.instructions-section h4 {
+    font-size: 1.1em;
+    font-weight: 400;
+    margin: 0.7em 0 0.3em 0;
+    letter-spacing: 0.03em;
+    color: #fafafa;
+    text-shadow: 0 1px 6px rgba(255,255,255,0.06);
 }
 
 #instructions-container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    background: rgba(20, 20, 20, 0.85);
+    border-radius: 22px;
+    box-shadow: 0 6px 32px 0 rgba(0,0,0,0.25), 0 1.5px 3px 0 rgba(255,255,255,0.07) inset;
+    border: 1.5px solid rgba(255,255,255,0.13);
+    backdrop-filter: blur(8px);
+    padding: 32px 24px 24px 24px;
+    margin: 40px 0 32px 0;
+    max-width: 600px;
+    width: 95vw;
+    transition: box-shadow 0.3s;
 }
 
 .keyboard-key {
@@ -48,10 +90,16 @@ h1 {
 }
 
 .instructions-section {
+    background: rgba(30,30,30,0.93);
+    border-radius: 16px;
+    box-shadow: 0 3px 18px 0 rgba(0,0,0,0.14);
+    margin: 24px 0;
+    padding: 24px 32px;
+    width: 100%;
+    max-width: 520px;
     text-align: left;
-    width: 100vw;
-    padding-left: 60px;
-    line-height: 2em;
+    line-height: 1.85em;
+    transition: box-shadow 0.2s, border 0.2s;
 }
 
 @keyframes toggleImages {
@@ -77,13 +125,129 @@ h1 {
 }
 
 
+ul#instructions {
+    padding-left: 0;
+    margin-left: 0;
+}
+ul#instructions li {
+    list-style: none;
+    margin: 18px 0 24px 0;
+    padding: 14px 0 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.09);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    transition: background 0.2s;
+}
+ul#instructions li:last-child {
+    border-bottom: none;
+}
 ul li img {
     max-width: 100px;
+    margin-right: 8px;
+    filter: grayscale(0.15) brightness(1.1);
+    border: 8px solid black;
+    box-shadow: 0 0px 4px 0 white;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.1);
+    padding: 2px;
+}
+
+.menu-img {
+    max-width: 64px;
+    max-height: 64px;
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 4px auto;
+    border: 4px solid black;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 0px 4px 0 white;
+    padding: 2px;
+}
+
+ul#instructions li img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#instructions-container img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.keyboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 15px 0;
+}
+
+.top-row, .bottom-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 5px 0;
 }
 
 .controls-p {
     display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 8px auto;
+    font-size: 1.05em;
+    letter-spacing: 0.03em;
+    text-align: center;
+}
+
+.key {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid white;
+    border-radius: 6px;
+    margin: 0 auto;
+    font-size: 1.8em;
+}
+
+.control-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.control-text {
+    margin-top: 8px;
+    font-size: 1.05em;
+    letter-spacing: 0.03em;
+}
+
+.keyboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 15px 0;
+}
+
+#bbb-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 20px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 
@@ -193,55 +357,48 @@ canvas {
 
 }
 
-#shop-panel {
-    display: none;
-    background-color: black;
-    flex-direction: column;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    border: 4px solid white;
-    padding: 10px;
-    background-color: black;
+.keyboard {
+    padding: 2.5em 0;
+    width: 400px;
+    margin: 0 auto;
 }
 
-.shop-item {
+
+.top-row {
+    width: 240px;
+    margin: 0 auto;
+}
+
+.bottom-row {
+    display: inline-flex;
+}
+
+.key {
+    background-color: #E6E1D3;
+    border: 1px solid #FAF9F6;
+    box-shadow: 5px 5px #c2b7ab;
+    color: black;
+    width: 80px;
+    height: 80px;
+    margin: 15px;
     display: flex;
-    gap: 0px;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    padding-bottom: 10px;
+    transition: all 0.07s ease;
 }
 
-.shop-item-title {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    margin-right: 80px;
-    width: 100%;
+@media (max-width: 768px) {
+    .key {
+        width: 50px;
+        height: 50px;
+        padding-bottom: 5px;
+    }
 }
 
-.shop-img {
-    display: flex;
-    width: 30px;
-    height: 30px;
-}
 
-.shop-coin {
-    width: 30px;
-}
-
-#shop-btn {
-    position: absolute;
-    top: 0;
-    left: 10px;
-    cursor: pointer;
-
-}
-
-.buy-btn {
-    font-family: "Pico-8";
-    background: black;
-    color: white;
+.key>p {
+    font-size: 2rem;
 }
 
 #coin-img {

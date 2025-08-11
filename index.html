@@ -5,6 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Vanilla JS Game</title>
 		<link rel="stylesheet" href="style.css" />
+		<link rel="stylesheet" href="shop.css" />
 	</head>
 	<body>
 		<h1>Pouring!</h1>
@@ -14,20 +15,35 @@
 
 			<div class="instructions-section">
 				<h3>Controls</h3>
+				<div class="keyboard">
+					<div class="top-row">
+						<div data-key="87" class="key">
+							<p>W</p>
+						</div>
+					</div>
+					<div class="bottom-row">
+						<div data-key="65" class="key">
+							<p>A</p>
+						</div>
+						<div data-key="83" class="key">
+							<p>S</p>
+						</div>
+						<div data-key="68" class="key">
+							<p>D</p>
+						</div>
+					</div>
+					<div class="control-text">to move</div>
+				</div>
 
-				<p class="controls-p">
-					<span class="keyboard-key">W</span><span class="keyboard-key">A</span
-					><span class="keyboard-key">S</span
-					><span class="keyboard-key">D</span>
-					to move
-				</p>
+				<div class="control-item">
+					<div data-key="80" class="key">P</div>
+					<div class="control-text">to open shop</div>
+				</div>
 
-				<p class="controls-p">
-					<span class="keyboard-key">P</span> to open shop
-				</p>
-				<p class="controls-p">
-					<span class="keyboard-key">M</span> to fire turret
-				</p>
+				<div class="control-item">
+					<div data-key="77" class="key">M</div>
+					<div class="control-text">to fire turret</div>
+				</div>
 			</div>
 
 			<div class="instructions-section">
@@ -47,10 +63,11 @@
 				<ul id="instructions">
 					<li>
 						<h4>Bowl, Bone, and Beethoven</h4>
-						<img id="bowl-menu" src="bowl.png" />
-
-						<img id="bone-menu" src="bone.png" />
-						<img id="beethoven-menu" src="beethoven.png" />
+						<div id="bbb-container">
+							<img id="bowl-menu" class = "menu-img" src="bowl.png" />
+							<img id="bone-menu" class = "menu-img" src="bone.png" />
+							<img id="beethoven-menu" class = "menu-img" src="beethoven.png" />
+						</div>
 						<p>
 							These power-ups are a one-time defense against a certain obstacle.
 							Purchase up to 3 in the shop and activate by clicking their icon
@@ -59,8 +76,8 @@
 					</li>
 					<li>
 						<h4>Laser Defense System</h4>
-						<img id="defense-menu" src="defense.png" />
-						<img id="defense-active-menu" src="defenseactive.png" />
+						<img id="defense-menu" class = "menu-img" src="defense.png" />
+						<img id="defense-active-menu" class = "menu-img" src="defenseactive.png" />
 						<p>
 							Purchase up to 3 laser defense codes in the shop. Activate by
 							clicking the icon in the top-right of the screen. Activating will
@@ -69,7 +86,7 @@
 					</li>
 					<li style="display: flex">
 						<h4>Turret</h4>
-						<img id="turret-menu" src="turret.png" />
+						<img id="turret-menu" class = "menu-img" src="turret.png" />
 						<p>
 							Activate the turret by purchasing it in the shop! Fire the Turret
 							with <span class="keyboard-key">M</span>. Enemies hit with the
@@ -227,7 +244,6 @@
 			</div>
 			<div id="joystick-container"></div>
 		</div>
-		
 
 		<img id="cat-img" src="cat.png" class="game-img" />
 		<img id="dog-img" src="dog.png" class="game-img" />

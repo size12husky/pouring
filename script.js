@@ -28,7 +28,7 @@ let rotationSpeed = 2;
 let frameCount = 0;
 let playerScore = 0;
 let playerHealth = 3;
-let coins = 0;
+let coins = 1000;
 let gameLoopId;
 
 //Power Ups
@@ -40,7 +40,7 @@ let itemCounts = {
 	turrets: 0,
 };
 
-let level = 1;
+let level = 5;
 
 let isPaused = false;
 let isShopOpen = false;
