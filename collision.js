@@ -58,15 +58,15 @@ function onHit(a, b, nameA, nameB) {
 		if (b.timeLeft < 300) {
 			coins++;
 			coinDisplay.innerText = `Coins: ${coins}`;
-			new Audio("coin.mp3").play();
+			new Audio("assets/audio/coin.mp3").play();
 			return;
 		}
 		playerScore++;
 		scoreDisplay.innerText = `Buckets: ${playerScore}`;
-		new Audio("water.wav").play();
+		new Audio("assets/audio/water.mp3").play();
 		return;
 	} else if (nameA === "pellets") {
-		new Audio("coin.mp3").play();
+		new Audio("assets/audio/coin.mp3").play();
 		console.log(b.x, b.y, b.width, b.height);
 		entities.buckets.push(
 			new Bucket(b.x, b.y, bucketSize, bucketSize, 300, true)
@@ -102,7 +102,7 @@ function onHit(a, b, nameA, nameB) {
 		);
 		hidePowerUp("beethoven", powerUpImg);
 	} else {
-		new Audio("woosh.wav").play();
+		new Audio("assets/audio/woosh.mp3").play();
 		hideHeart();
 	}
 }

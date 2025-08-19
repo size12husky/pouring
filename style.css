@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'Pico-8';
-    src: url('pico-8.otf');
+    src: url('assets/fonts/pico-8.otf');
 }
 
 #joystick-container {

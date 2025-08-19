@@ -11,7 +11,7 @@ const BASE_CANVAS_HEIGHT = 600;
 
 const c = document.getElementById("myCanvas");
 const ctx = c.getContext("2d");
-const backgroundMusic = new Audio("catsanddogs.wav");
+const backgroundMusic = new Audio("assets/audio/catsanddogs.mp3");
 let boxSize = window.innerWidth / 20;
 let bucketSize = boxSize * 0.7;
 let laserWidth = boxSize / 3;
@@ -323,7 +323,7 @@ function spawnLasers() {
 	const padding = laserWidth;
 	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
 	entities.lasers.push(new Laser(randomX, 0, laserWidth, laserHeight));
-	const laserAudio = new Audio("laser.wav");
+	const laserAudio = new Audio("assets/audio/laser.mp3");
 	laserAudio.play();
 }
 
@@ -341,7 +341,7 @@ function spawnCats() {
 	entities.cats.push(
 		new Cat(randomX, 0, catWidth, catHeight, 0, rotationSpeed)
 	);
-	const catAudio = new Audio("meow.wav");
+	const catAudio = new Audio("assets/audio/meow.mp3");
 	catAudio.play();
 }
 
@@ -359,7 +359,7 @@ function spawnJetPackCats() {
 	entities.jetPackCats.push(
 		new JetPackCat(randomX, 0, dogWidth, dogHeight, targetY, false, 1)
 	);
-	const catAudio = new Audio("meow.wav");
+	const catAudio = new Audio("assets/audio/meow.mp3");
 	catAudio.play();
 }
 
@@ -377,7 +377,7 @@ function spawnDogs() {
 	entities.dogs.push(
 		new Dog(randomX, 0, dogWidth, dogHeight, 0, rotationSpeed)
 	);
-	const dogAudio = new Audio("bark.mp3");
+	const dogAudio = new Audio("assets/audio/bark.mp3");
 	dogAudio.play();
 }
 
@@ -406,7 +406,7 @@ function spawnJetPackDogs() {
 			1
 		)
 	);
-	const dogAudio = new Audio("bark.mp3");
+	const dogAudio = new Audio("assets/audio/bark.mp3");
 	dogAudio.play();
 }
 
@@ -425,7 +425,7 @@ function spawnPianos() {
 	const padding = pianoWidth;
 	const randomX = Math.random() * (ctx.canvas.width - padding * 2) + padding;
 	entities.pianos.push(new Piano(randomX, 0, pianoWidth, pianoHeight));
-	const pianoAudio = new Audio("piano.wav");
+	const pianoAudio = new Audio("assets/audio/piano.mp3");
 	pianoAudio.play();
 }
 
@@ -484,7 +484,7 @@ function hideHeart() {
 function checkScore() {
 	if (playerScore >= 20) {
 		playerScore = 0;
-		cloudImg.src = "cloudrain.png";
+		cloudImg.src = "assets/images/cloudrain.png";
 		entities.players[0].height = boxSize * 1.2;
 		level++;
 		isPaused = true;
@@ -566,7 +566,7 @@ function gameOver() {
 	entities.catBullets = [];
 	entities.dogBullets = [];
 	turretEnabled = false;
-	cloudImg.src = "cloud.png";
+	cloudImg.src = "assets/images/cloud.png";
 	entities.players[0].height = boxSize / 1.1;
 	entities.players[0].x = (ctx.canvas.width - entities.players[0].width) / 2;
 	entities.players[0].y = ctx.canvas.height - entities.players[0].height - 10;
@@ -599,10 +599,10 @@ startGameBtn.addEventListener("click", () => {
 
 	isPaused = false;
 	if (turretEnabled) {
-		cloudImg.src = "cloudturret.png";
+		cloudImg.src = "assets/images/cloudturret.png";
 		entities.players[0].height = boxSize * 1.2;
 	} else {
-		cloudImg.src = "cloud.png";
+		cloudImg.src = "assets/images/cloud.png";
 		entities.players[0].height = boxSize / 1.1;
 	}
 
