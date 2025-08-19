@@ -48,6 +48,7 @@ let level = 9;
 
 let isPaused = false;
 let isShopOpen = false;
+let isGameOver = false;
 let lasersDisabled = false;
 let turretEnabled = false;
 
@@ -104,7 +105,7 @@ let entities = {
 	jetPackDogs: [],
 	pellets: [],
 	catBullets: [],
-	dogBullets: []
+	dogBullets: [],
 };
 
 function shootBullets() {
@@ -145,7 +146,7 @@ document.addEventListener("keyup", (e) => {
 });
 
 function gameLoop() {
-	if (isPaused) return;
+	if (isPaused || isGameOver) return;
 	frameCount++;
 	entities.buckets = entities.buckets.filter((b) => b.timeLeft > 0);
 	entities.cats = entities.cats.filter((c) => c.y <= ctx.canvas.height);
@@ -153,7 +154,9 @@ function gameLoop() {
 	entities.pianos = entities.pianos.filter((p) => p.y <= ctx.canvas.height);
 	entities.lasers = entities.lasers.filter((l) => l.y <= ctx.canvas.height);
 	entities.pellets = entities.pellets.filter((p) => p.y >= 0);
-	entities.catBullets = entities.catBullets.filter((b) => b.y <= ctx.canvas.height);
+	entities.catBullets = entities.catBullets.filter(
+		(b) => b.y <= ctx.canvas.height
+	);
 	entities.dogBullets = entities.dogBullets.filter((b) => b.y >= 0);
 
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -233,7 +236,7 @@ function initCanvas(resizeOnly = false) {
 	pianoHeight = catHeight;
 
 	const isMobile = window.innerWidth <= 768;
-	const mobileMultiplier = isMobile ? 0.3 : 1.4; // Slower on mobile
+	const mobileMultiplier = isMobile ? 0.3 : 0.4; // Slower on mobile
 
 	const baseSpeed = isMobile ? 2 : 3; // Lower base speed on mobile
 	const scaledComponent = canvasHeight * 0.008; // Scaled portion
@@ -408,14 +411,14 @@ function spawnJetPackDogs() {
 }
 
 function drawJetPackDogs() {
-    for (const bullet of entities.dogBullets) {
-        bullet.y -= bullet.speed;
-    }
+	for (const bullet of entities.dogBullets) {
+		bullet.y -= bullet.speed;
+	}
 
-    for (const dog of entities.jetPackDogs) {
-        dog.update();
-        dog.draw(ctx);
-    }
+	for (const dog of entities.jetPackDogs) {
+		dog.update();
+		dog.draw(ctx);
+	}
 }
 
 function spawnPianos() {
@@ -530,8 +533,15 @@ function updateCoins() {
 }
 
 function gameOver() {
+	isGameOver = true;
 	backgroundMusic.pause();
 	backgroundMusic.currentTime = 0;
+
+	// Clear the canvas and draw a semi-transparent black overlay
+	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+	ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+	ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
 	initCanvas();
 	frameCount = 0;
 	entities.players[0].health = 3;
@@ -544,6 +554,7 @@ function gameOver() {
 	hideAllPowerUps();
 	startGameBtn.style.display = "block";
 	startGameBtn.innerText = "PLAY AGAIN";
+
 	entities.pellets = [];
 	entities.buckets = [];
 	entities.cats = [];
@@ -552,17 +563,41 @@ function gameOver() {
 	entities.lasers = [];
 	entities.jetPackCats = [];
 	entities.jetPackDogs = [];
+	entities.catBullets = [];
+	entities.dogBullets = [];
 	turretEnabled = false;
 	cloudImg.src = "cloud.png";
 	entities.players[0].height = boxSize / 1.1;
-	cancelAnimationFrame(gameLoopId);
+	entities.players[0].x = (ctx.canvas.width - entities.players[0].width) / 2;
+	entities.players[0].y = ctx.canvas.height - entities.players[0].height - 10;
+	if (gameLoopId) {
+		cancelAnimationFrame(gameLoopId);
+		gameLoopId = null;
+	}
 }
 
 startGameBtn.addEventListener("click", () => {
-	isPaused = false;
-	if (startGameBtn.innerText !== "START") {
-		levelDisplay.innerText = `Level ${level}`;
+	// Force a reflow to ensure the canvas container has correct dimensions
+	const canvasContainer = document.querySelector('.canvas-container');
+	if (canvasContainer) {
+		const reflow = canvasContainer.offsetHeight;
 	}
+
+	// Initialize the canvas with proper dimensions
+	initCanvas();
+
+	if (isGameOver) {
+		isGameOver = false;
+		playerScore = 0;
+		scoreDisplay.innerText = `Buckets: ${playerScore}`;
+		levelDisplay.innerText = `Level ${level}`;
+
+		for (let i = 0; i < healthBar.length; i++) {
+			healthBar[i].style.display = "flex";
+		}
+	}
+
+	isPaused = false;
 	if (turretEnabled) {
 		cloudImg.src = "cloudturret.png";
 		entities.players[0].height = boxSize * 1.2;
@@ -570,12 +605,22 @@ startGameBtn.addEventListener("click", () => {
 		cloudImg.src = "cloud.png";
 		entities.players[0].height = boxSize / 1.1;
 	}
+
+	// Position player in the center of the canvas
+	entities.players[0].x = (ctx.canvas.width - entities.players[0].width) / 2;
+	entities.players[0].y = (ctx.canvas.height - entities.players[0].height) / 2;
+
+	// Start background music
 	backgroundMusic.loop = true;
 	backgroundMusic.play();
 	startGameBtn.style.display = "none";
-	playerScore = 0;
-	scoreDisplay.innerText = `Buckets: ${playerScore}`;
-	initCanvas();
+
+	// Clear any existing game loop
+	if (gameLoopId) {
+		cancelAnimationFrame(gameLoopId);
+	}
+
+	// Start the game loop
 	gameLoopId = requestAnimationFrame(gameLoop);
 });
 

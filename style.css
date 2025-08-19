@@ -29,7 +29,7 @@ body {
 h1 {
     font-size: 3em;
     letter-spacing: 0.07em;
-    margin-bottom: 0.2em;
+    margin-bottom: 1em;
     font-weight: bold;
     text-shadow: 0 2px 12px rgba(255,255,255,0.09);
 }
