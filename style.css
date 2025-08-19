@@ -26,12 +26,54 @@ body {
 
 }
 
+/* Header section */
+.title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto 1.5em;
+    max-width: 800px;
+    width: 90%;
+    position: relative;
+}
+
 h1 {
-    font-size: 3em;
+    font-size: 4em;
     letter-spacing: 0.07em;
-    margin-bottom: 1em;
+    margin: 0 0 0.5em;
     font-weight: bold;
     text-shadow: 0 2px 12px rgba(255,255,255,0.09);
+    text-align: center;
+    line-height: 1.1;
+}
+
+.cloud-title {
+    width: 100%;
+    max-width: 250px;
+    height: auto;
+    margin: 0 0 1em;
+}
+
+#next-btn {
+    margin: 1.5em auto 0;
+    display: block;
+    padding: 0.6em 2em;
+    font-size: 1.1em;
+}
+
+/* Adjust for smaller screens */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 3.2em;
+    }
+    
+    .cloud-title {
+        max-width: 200px;
+    }
+    
+    #next-btn {
+        margin-top: 1em;
+    }
 }
 #instructions-container h2 {
     font-size: 2.1em;
