@@ -1,9 +1,13 @@
 window.currentMovement = window.currentMovement || {
-    left: false,
-    right: false,
-    up: false,
-    down: false
+	left: false,
+	right: false,
+	up: false,
+	down: false,
 };
+
+const TARGET_ASPECT_RATIO = 4 / 3;
+const BASE_CANVAS_WIDTH = 800;
+const BASE_CANVAS_HEIGHT = 600;
 
 const c = document.getElementById("myCanvas");
 const ctx = c.getContext("2d");
@@ -40,7 +44,7 @@ let itemCounts = {
 	turrets: 0,
 };
 
-let level = 5;
+let level = 9;
 
 let isPaused = false;
 let isShopOpen = false;
@@ -99,7 +103,8 @@ let entities = {
 	jetPackCats: [],
 	jetPackDogs: [],
 	pellets: [],
-	enemyBullets: [],
+	catBullets: [],
+	dogBullets: []
 };
 
 function shootBullets() {
@@ -148,6 +153,8 @@ function gameLoop() {
 	entities.pianos = entities.pianos.filter((p) => p.y <= ctx.canvas.height);
 	entities.lasers = entities.lasers.filter((l) => l.y <= ctx.canvas.height);
 	entities.pellets = entities.pellets.filter((p) => p.y >= 0);
+	entities.catBullets = entities.catBullets.filter((b) => b.y <= ctx.canvas.height);
+	entities.dogBullets = entities.dogBullets.filter((b) => b.y >= 0);
 
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	drawBackground();
@@ -171,9 +178,9 @@ function gameLoop() {
 	if (keys.a) moveLeft();
 	if (keys.d) moveRight();
 	if (window.currentMovement.left) moveLeft();
-    if (window.currentMovement.right) moveRight();
-    if (window.currentMovement.up) moveUp();
-    if (window.currentMovement.down) moveDown();
+	if (window.currentMovement.right) moveRight();
+	if (window.currentMovement.up) moveUp();
+	if (window.currentMovement.down) moveDown();
 	for (let i = 0; i < entities.buckets.length; i++) {
 		if (entities.buckets[i].timeLeft === 0) entities.buckets.shift();
 	}
@@ -188,36 +195,81 @@ function gameLoop() {
 }
 
 function initCanvas(resizeOnly = false) {
-    ctx.canvas.width = window.innerWidth / 1.5;
-    ctx.canvas.height = (3 * window.innerWidth) / 5;
-    boxSize = window.innerWidth / 20;
+	// Calculate available space
+	const maxWidth = window.innerWidth * 0.9; // Leave some margin
+	const maxHeight = window.innerHeight * 0.9;
 
-    bucketSize = boxSize * 0.7;
-    laserWidth = boxSize / 3;
-    laserHeight = boxSize * 2;
-    catWidth = boxSize;
-    catHeight = boxSize * 0.8;
-    dogWidth = catWidth;
-    dogHeight = catHeight * 1.1;
-    pianoWidth = catWidth;
-    pianoHeight = catHeight;
+	// Determine actual canvas size while maintaining 4:3 aspect ratio
+	let canvasWidth, canvasHeight;
+
+	if (maxWidth / maxHeight > TARGET_ASPECT_RATIO) {
+		// Window is wider than 4:3, constrain by height
+		canvasHeight = maxHeight;
+		canvasWidth = canvasHeight * TARGET_ASPECT_RATIO;
+	} else {
+		// Window is taller than 4:3, constrain by width
+		canvasWidth = maxWidth;
+		canvasHeight = canvasWidth / TARGET_ASPECT_RATIO;
+	}
+
+	// Set canvas dimensions
+	ctx.canvas.width = canvasWidth;
+	ctx.canvas.height = canvasHeight;
+
+	// Calculate scale factor based on reference resolution
+	const scale = canvasWidth / BASE_CANVAS_WIDTH;
+
+	// Update all game variables based on scale
+	boxSize = 40 * scale; // Base size at reference resolution
+
+	bucketSize = boxSize * 0.7;
+	laserWidth = boxSize / 3;
+	laserHeight = boxSize * 2;
+	catWidth = boxSize;
+	catHeight = boxSize * 0.8;
+	dogWidth = catWidth;
+	dogHeight = catHeight * 1.1;
+	pianoWidth = catWidth;
+	pianoHeight = catHeight;
+
 	const isMobile = window.innerWidth <= 768;
-	const speedMultiplier = isMobile ? 1.2 : 1;
+	const mobileMultiplier = isMobile ? 0.3 : 1.4; // Slower on mobile
 
-	catSpeed = Math.max(boxSize * 0.02 * speedMultiplier, 0.5);
-	dogSpeed = Math.max(boxSize * 0.03 * speedMultiplier, 0.7);
-	pianoSpeed = Math.max(boxSize * 0.065 * speedMultiplier, 2.5);
-	laserSpeed = Math.max(boxSize * 0.06 * speedMultiplier, 2);
-	pelletSpeed = Math.max(boxSize * 0.1 * speedMultiplier, 4);
-	playerSpeed = Math.max(boxSize * 0.06 * speedMultiplier, 1);
+	const baseSpeed = isMobile ? 2 : 3; // Lower base speed on mobile
+	const scaledComponent = canvasHeight * 0.008; // Scaled portion
+
+	catSpeed = (baseSpeed + scaledComponent * 0.5) * mobileMultiplier;
+	dogSpeed = (baseSpeed + scaledComponent * 0.8) * mobileMultiplier;
+	pianoSpeed = (baseSpeed + scaledComponent * 1.5) * mobileMultiplier;
+	laserSpeed = (baseSpeed + scaledComponent * 1.2) * mobileMultiplier;
+	pelletSpeed = (baseSpeed + scaledComponent * 2) * mobileMultiplier;
+	playerSpeed = (baseSpeed + scaledComponent * 1) * mobileMultiplier;
 
 	entities.players[0].width = boxSize * 1.5;
+	entities.players[0].height = boxSize / 1.1;
 	entities.players[0].speed = playerSpeed;
-    
-    if (!resizeOnly) {
-        entities.players[0].x = ctx.canvas.width / 2 - entities.players[0].width / 2;
-        entities.players[0].y = ctx.canvas.height / 2 - entities.players[0].height / 2;
-    }
+
+	if (!resizeOnly) {
+		entities.players[0].x =
+			ctx.canvas.width / 2 - entities.players[0].width / 2;
+		entities.players[0].y =
+			ctx.canvas.height / 2 - entities.players[0].height / 2;
+	} else {
+		entities.players[0].x = Math.max(
+			0,
+			Math.min(
+				ctx.canvas.width - entities.players[0].width,
+				entities.players[0].x
+			)
+		);
+		entities.players[0].y = Math.max(
+			0,
+			Math.min(
+				ctx.canvas.height - entities.players[0].height,
+				entities.players[0].y
+			)
+		);
+	}
 }
 
 function drawBackground() {
@@ -356,10 +408,14 @@ function spawnJetPackDogs() {
 }
 
 function drawJetPackDogs() {
-	for (const dog of entities.jetPackDogs) {
-		dog.update();
-		dog.draw(ctx);
-	}
+    for (const bullet of entities.dogBullets) {
+        bullet.y -= bullet.speed;
+    }
+
+    for (const dog of entities.jetPackDogs) {
+        dog.update();
+        dog.draw(ctx);
+    }
 }
 
 function spawnPianos() {
@@ -454,10 +510,13 @@ function checkScore() {
 			entities.jetPackCats = [];
 			entities.jetPackDogs = [];
 
-			laserSpeed += boxSize * 0.005;
-			catSpeed += boxSize * 0.005;
-			dogSpeed += boxSize * 0.005;
-			pianoSpeed += boxSize * 0.005;
+			const scale = ctx.canvas.width / BASE_CANVAS_WIDTH;
+			const speedIncrease = 0.2 * scale;
+
+			laserSpeed += speedIncrease;
+			catSpeed += speedIncrease;
+			dogSpeed += speedIncrease;
+			pianoSpeed += speedIncrease;
 		}, 1000);
 	}
 }
@@ -529,5 +588,5 @@ document.addEventListener("keydown", (e) => {
 });
 
 window.addEventListener("resize", () => {
-	initCanvas(true)
+	initCanvas(true);
 });

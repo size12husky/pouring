@@ -1,4 +1,4 @@
-window.currentMovement = {
+/*window.currentMovement = {
 	left: false,
 	right: false,
 	up: false,
@@ -6,7 +6,7 @@ window.currentMovement = {
 };
 
 const container = document.getElementById("joystick-container");
-const isMobile = window.innerWidth <= 768;
+const isMobile = window.innerWidth <= 10;
 
 if (isMobile) {
 	const manager = nipplejs.create({
@@ -46,3 +46,4 @@ manager.on("end", () => {
 		down: false,
 	};
 });
+*/

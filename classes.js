@@ -166,7 +166,7 @@ class JetPackCat {
 			height: 10,
 			speed: 2,
 		};
-		entities.enemyBullets.push(bullet);
+		entities.catBullets.push(bullet);
 	}
 
 	update() {
@@ -201,7 +201,7 @@ class JetPackCat {
 	draw(ctx) {
 		ctx.drawImage(jetPackCatImg, this.x, this.y, this.width, this.height);
 		if (!this.isHovering) return;
-		for (const bullet of entities.enemyBullets) {
+		for (const bullet of entities.catBullets) {
 			bullet.y += bullet.speed;
 			ctx.fillStyle = "red";
 			ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
@@ -230,7 +230,7 @@ class JetPackDog {
 			height: 10,
 			speed: 2,
 		};
-		entities.enemyBullets.push(bullet);
+		entities.dogBullets.push(bullet);
 	}
 
 	update() {
@@ -247,6 +247,7 @@ class JetPackDog {
 				}
 			}
 		} else {
+			// Update all bullets to move upward
 			this.bullets.forEach((b) => (b.y -= b.speed));
 			this.y += (dogSpeed / 3) * this.hoverDir;
 
@@ -264,8 +265,8 @@ class JetPackDog {
 	draw(ctx) {
 		ctx.drawImage(jetPackDogImg, this.x, this.y, this.width, this.height);
 		if (!this.isHovering) return;
-		for (const bullet of entities.enemyBullets) {
-			bullet.y -= bullet.speed;
+		// Only draw the bullets, don't update their position here
+		for (const bullet of entities.dogBullets) {
 			ctx.fillStyle = "red";
 			ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
 		}

@@ -275,13 +275,6 @@ ul#instructions li img {
     margin: 0 auto;
 }
 
-canvas {
-    max-width: 90vw;
-    max-height: 70vh;
-    width: auto;
-    height: auto;
-    border: 2px solid white;
-}
 
 #score-wrapper {
     margin: 20px auto;
@@ -420,11 +413,6 @@ canvas {
         padding: 10px;
     }
 
-    canvas {
-        max-width: 95vw;
-        max-height: 60vh;
-    }
-
     #start-game-btn {
         min-width: 120px;
         padding: 12px 16px;
@@ -436,10 +424,6 @@ canvas {
 }
 
 @media (max-width: 480px) {
-    canvas {
-        max-width: 98vw;
-        max-height: 55vh;
-    }
 
     #start-game-btn {
         min-width: 100px;
