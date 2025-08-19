@@ -1,10 +1,3 @@
-window.currentMovement = window.currentMovement || {
-	left: false,
-	right: false,
-	up: false,
-	down: false,
-};
-
 const TARGET_ASPECT_RATIO = 4 / 3;
 const BASE_CANVAS_WIDTH = 800;
 const BASE_CANVAS_HEIGHT = 600;
@@ -32,7 +25,7 @@ let rotationSpeed = 2;
 let frameCount = 0;
 let playerScore = 0;
 let playerHealth = 3;
-let coins = 1000;
+let coins = 0;
 let gameLoopId;
 
 //Power Ups
@@ -44,7 +37,7 @@ let itemCounts = {
 	turrets: 0,
 };
 
-let level = 9;
+let level = 1;
 
 let isPaused = false;
 let isShopOpen = false;
