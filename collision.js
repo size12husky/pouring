@@ -70,6 +70,36 @@ function onHit(a, b, nameA, nameB) {
 		entities.buckets.push(
 			new Bucket(b.x, b.y, bucketSize, bucketSize, 300, true)
 		);
+	} else if (
+		nameA === "players" &&
+		nameB === "cats" &&
+		itemCounts["bowl"] > 0
+	) {
+		itemCounts["bowl"]--;
+		let powerUpImg = document.querySelector(
+			".power-up-img.bowl:not([style*='display: none'])"
+		);
+		hidePowerUp("bowl", powerUpImg);
+	} else if (
+		nameA === "players" &&
+		nameB === "dogs" &&
+		itemCounts["bone"] > 0
+	) {
+		itemCounts["bone"]--;
+		let powerUpImg = document.querySelector(
+			".power-up-img.bone:not([style*='display: none'])"
+		);
+		hidePowerUp("bone", powerUpImg);
+	} else if (
+		nameA === "players" &&
+		nameB === "pianos" &&
+		itemCounts["beethoven"] > 0
+	) {
+		itemCounts["beethoven"]--;
+		let powerUpImg = document.querySelector(
+			".power-up-img.beethoven:not([style*='display: none'])"
+		);
+		hidePowerUp("beethoven", powerUpImg);
 	} else {
 		new Audio("woosh.wav").play();
 		hideHeart();
