@@ -173,10 +173,6 @@ function gameLoop() {
 	if (keys.s) moveDown();
 	if (keys.a) moveLeft();
 	if (keys.d) moveRight();
-	if (window.currentMovement.left) moveLeft();
-	if (window.currentMovement.right) moveRight();
-	if (window.currentMovement.up) moveUp();
-	if (window.currentMovement.down) moveDown();
 	for (let i = 0; i < entities.buckets.length; i++) {
 		if (entities.buckets[i].timeLeft === 0) entities.buckets.shift();
 	}
